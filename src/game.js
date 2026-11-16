@@ -513,6 +513,7 @@ export class Game {
         if (u.hp < 100) { const h = Math.min(100 - u.hp, 20); u.hp += h; ev.push({ type: 'heal', u: u.id, amount: h }); }
         if (u.def.ammo && u.ammo < u.def.ammo) { u.ammo = u.def.ammo; ev.push({ type: 'rearm', u: u.id }); }
       }
+      if (u.def.medic) for (const v of this.units) if (!v.dead && !v.carried && v.owner === owner && v.hp < 100 && distance(v.c, v.r, u.c, u.r) <= 1) { const h = Math.min(100 - v.hp, u.def.medic); v.hp += h; ev.push({ type: 'heal', u: v.id, amount: h }); }
       if (u.def.ammo && u.ammo < u.def.ammo) {
         const h = this.buildings.find((b) => !b.dead && b.owner === owner && b.type === 'horst' && b.turnsLeft <= 0 && distance(b.c, b.r, u.c, u.r) <= 1);
         if (h) { u.ammo = u.def.ammo; ev.push({ type: 'rearm', u: u.id }); }
@@ -560,8 +561,8 @@ export class Game {
     else if (id === 'sabotage') { const b = this.buildingAt(c, r); b.sabotaged = 1; ev.target = b.id; this.updatePower(); }
     else if (id === 'gilde') { p.freeDrop = true; }
     p.cards.splice(idx, 1); p.cardRound = this.round;
-    if (owner === 0) this.say(`Intrige gespielt: ${card.name}`, 'good');
-    else this.say(`Der Feind spielt eine Intrige: ${card.name}`, 'warn');
+    if (owner === 0) this.say(`Hack ausgeführt: ${card.name}`, 'good');
+    else this.say(`Feindlicher Hack: ${card.name}`, 'warn');
     this.updateVision();
     return ev;
   }
@@ -624,7 +625,7 @@ export class Game {
   callWorm(u, c, r) {
     this.wormCalls.push({ c, r, owner: u.owner });
     u.wormCd = 4; u.acted = true; u.moved = true;
-    if (u.owner === 0) this.say('Der Psycho-Prediger schlägt den Ruf — in der nächsten Psychophase kommt ein Großer Psycho', 'good');
+    if (u.owner === 0) this.say('Der Psycho-Prediger sendet das Signal — in der nächsten Psychophase bricht eine Psycho-Rotte los', 'good');
     return { type: 'wormcall', u: u.id, c, r };
   }
 
@@ -836,7 +837,7 @@ export class Game {
         let worm = null;
         if (this.worms.length < 5 && this.rnd() < 0.8) worm = this.spawnWorm(c, r);
         ev.push({ type: 'blow', c, r, worm: worm?.id });
-        this.say(this.explored[this.i(c, r)] ? 'Chromfund! Neues Feld in der Stadt' : 'Chromfund irgendwo in der Stadt', 'good');
+        this.say(this.explored[this.i(c, r)] ? 'Chromfund! Neues Schrottlager aufgeflogen' : 'Chromfund irgendwo in der Stadt', 'good');
         break;
       }
     }
@@ -895,8 +896,8 @@ export class Game {
           const eaten = this.units.filter((u) => !u.dead && !u.carried && u.def.mt !== 'air' && hexes.some(([c, r]) => c === u.c && r === u.r));
           for (const u of eaten) this.kill(u);
           ev.push({ type: 'worm', id: w.id, path, eatMany: eaten.map((u) => u.id), eatHexes: hexes, thumper: true });
-          if (eaten.some((u) => u.owner === 1)) this.say(`Der Störsender hat einen Psycho angelockt — ${eaten.filter((u) => u.owner === 1).length} feindliche Einheiten verschlungen!`, 'good');
-          if (eaten.some((u) => u.owner === 0)) this.say('Ein Psycho folgte einem Störsender und verschlang eure Einheiten!', 'bad');
+          if (eaten.some((u) => u.owner === 1)) this.say(`Der Störsender hat einen Psycho angelockt — ${eaten.filter((u) => u.owner === 1).length} feindliche Einheiten zerlegt!`, 'good');
+          if (eaten.some((u) => u.owner === 0)) this.say('Ein Psycho folgte einem Störsender und zerlegte eure Einheiten!', 'bad');
           return ev;
         }
         ev.push({ type: 'worm', id: w.id, path });
@@ -950,12 +951,12 @@ export class Game {
           for (const u of eaten) { this.kill(u); this.players[u.owner].stats.eaten++; }
           w.sated = WORM_SIZES[w.size || 1].sated; w.lock = null;
           ev.push({ type: 'worm', id: w.id, path, eatMany: eaten.map((u) => u.id), eatHexes: hexes, owner: best.owner });
-          if (best.owner === 0) this.say(`Ein Psycho hat euren ${best.def.name} verschlungen!`, 'bad');
+          if (best.owner === 0) this.say(`Ein Psycho hat euren ${best.def.name} zerlegt!`, 'bad');
           return ev;
         }
         if (!stalking) {
           w.lock = best.id; w.lockGrace = 1;
-          if (best.owner === 0) this.say(`Ein Psycho hat euren ${best.def.name} gewittert! Nächste Runde schlägt er zu — auf Fels bringen oder ausfliegen`, 'warn');
+          if (best.owner === 0) this.say(`Ein Psycho hat euren ${best.def.name} ins Visier genommen! Nächste Runde schlägt er zu — auf Beton bringen oder ausfliegen`, 'warn');
         }
         if (path.length > 1) { ev.push({ type: 'worm', id: w.id, path }); return ev; }
       }
@@ -973,7 +974,7 @@ export class Game {
     }
     ev.push({ type: 'worm', id: w.id, path });
     const near = this.units.some((u) => !u.dead && u.owner === 0 && !u.carried && u.def.mt !== 'air' && this.isSand(u.c, u.r) && distance(u.c, u.r, w.c, w.r) <= 5);
-    if (near) this.say('Psycho-Signale! Einheiten auf Fels bringen', 'warn');
+    if (near) this.say('Psycho-Signale! Einheiten auf Beton bringen', 'warn');
     return ev;
   }
 

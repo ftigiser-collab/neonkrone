@@ -406,7 +406,7 @@ export class Controller {
         for (const v of victims) { const p0 = v.vis; v.vis = { x: p0.x + (end.x - p0.x) * 0.2, y: p0.y + (end.y - p0.y) * 0.2 }; v.sink = k; }
       });
       for (const v of victims) v.gone = true;
-      this.r.float(end.x, end.y - 46 * sc, victims.length ? (victims.length > 1 ? `${victims.length} Einheiten verschlungen!` : 'Verschlungen!') : 'Der Köder ist weg', '#ff7050', true);
+      this.r.float(end.x, end.y - 46 * sc, victims.length ? (victims.length > 1 ? `${victims.length} Einheiten zerlegt!` : 'Zerlegt!') : 'Der Köder ist Schrott', '#ff7050', true);
       await this.tween(0.45, (k) => { w.open = 0.6 + 0.4 * k; });
       // 4. Verharren: Zahnringe mahlen, Sand rieselt in den Schlund
       await this.tween(1.1, (k) => {
@@ -484,7 +484,7 @@ export class Controller {
       await this.wait(0.5);
       for (const u of units) { u.hidden = false; this.hitFlash(u); }
       $('#app').classList.remove('quake');
-      this.r.float(tgt.x, tgt.y - 60, 'Das Stadtnheer erhebt sich!', '#ffd28a', true);
+      this.r.float(tgt.x, tgt.y - 60, 'Die Chromfresser brechen los!', '#ffd28a', true);
       await this.wait(0.8);
     } else {
       for (const u of units) u.hidden = true;
@@ -554,7 +554,7 @@ export class Controller {
     const p = center(c, r);
     const card = CARDS[ev.card];
     const visible = owner === 0 || (c !== undefined && g.visible[g.i(c, r)]);
-    await this.banner(card.name, owner === 0 ? 'Intrige der Netrunner-Kollektiv' : `${g.players[owner].name} spielt eine Intrige`, 0.9);
+    await this.banner(card.name, owner === 0 ? 'Hack des Netrunner-Kollektivs' : `${g.players[owner].name} hackt`, 0.9);
     if (!visible && !['wetter', 'sabotage', 'stimme', 'verrat'].includes(ev.card)) { this.refresh(); return true; }
     if (ev.target || ev.card === 'klopfer' || ev.card === 'wetter') { this.r.centerOn(p.x, p.y); await this.wait(0.3); }
     const fx = this.fx;
@@ -943,7 +943,7 @@ export class Controller {
     this.save();
   }
 
-  save() { try { localStorage.setItem('sandthron-save', this.g.serialize()); } catch (e) { /* Speicher voll oder gesperrt */ } }
+  save() { try { localStorage.setItem('neonkrone-save', this.g.serialize()); } catch (e) { /* Speicher voll oder gesperrt */ } }
 
   checkEnd() {
     const s = this.g.checkEnd();
@@ -952,15 +952,15 @@ export class Controller {
     this.busy = true;
     const el = $('#endscreen');
     const p = this.g.players[0], m = this.g.mission;
-    el.querySelector('h1').textContent = m ? (s === 'won' ? 'Mission erfüllt' : 'Mission gescheitert') : s === 'won' ? 'Der Sand gehört euch' : 'Eure Basis ist gefallen';
-    el.querySelector('.stats').innerHTML = `${m ? `<b>${m.title}</b><br>` : ''}Runde ${this.g.round} · Gegner vernichtet: ${p.stats.kills} · Eigene Verluste: ${p.stats.lost} · Chrom geerntet: ${p.stats.harvested}`;
+    el.querySelector('h1').textContent = m ? (s === 'won' ? 'Mission erfüllt' : 'Mission gescheitert') : s === 'won' ? 'Die Stadt gehört euch' : 'Eure Basis ist gefallen';
+    el.querySelector('.stats').innerHTML = `${m ? `<b>${m.title}</b><br>` : ''}Runde ${this.g.round} · Gegner vernichtet: ${p.stats.kills} · Eigene Verluste: ${p.stats.lost} · Chrom gesammelt: ${p.stats.harvested}`;
     if (m) {
       if (s === 'won') this.onMissionWon?.(m);
       el.querySelector('.ebtns').innerHTML = `<button id="tocamp" class="primary">${s === 'won' ? 'Zur Kampagne' : 'Kampagne'}</button><button onclick="location.reload()">Hauptmenü</button>`;
-      el.querySelector('#tocamp').onclick = () => { try { sessionStorage.setItem('sandthron-open-campaign', '1'); } catch {} location.reload(); };
+      el.querySelector('#tocamp').onclick = () => { try { sessionStorage.setItem('neonkrone-open-campaign', '1'); } catch {} location.reload(); };
     }
     el.classList.add('show');
-    try { localStorage.removeItem('sandthron-save'); } catch (e) {}
+    try { localStorage.removeItem('neonkrone-save'); } catch (e) {}
     this.onEnd?.();
     return true;
   }
@@ -1081,7 +1081,7 @@ export class Controller {
   refresh() {
     const g = this.g, p = g.players[0];
     $('#round').textContent = g.round;
-    const ph = g.dayPhase(); const tz = $('#daytime'); if (tz) { tz.textContent = { morgen: 'Morgen', tag: 'Tag', abend: 'Abend', nacht: 'Nacht' }[ph]; tz.parentElement.classList.toggle('night', ph === 'nacht'); }
+    const ph = g.dayPhase(); const tz = $('#daytime'); if (tz) { tz.textContent = { morgen: 'Morgengrauen', tag: 'Smogtag', abend: 'Abend', nacht: 'Nacht' }[ph]; tz.parentElement.classList.toggle('night', ph === 'nacht'); }
     $('#credits').textContent = Math.floor(p.credits).toLocaleString('de-DE');
     const pw = $('#power');
     pw.textContent = `${p.powerProd - p.powerUse >= 0 ? '+' : ''}${p.powerProd - p.powerUse}`;
@@ -1288,8 +1288,9 @@ export class Controller {
     if (w) tags.push(`Waffe ${w.power} · Reichweite ${w.range[0] === w.range[1] ? w.range[0] : w.range.join('–')}`);
     if (d.ammo) tags.push(`Munition ${d.ammo}`);
     if (d.faction) tags.unshift(`Exklusiv: ${FACTIONS[d.faction].name}`);
-    if (d.stealth) tags.push(d.stealth === 'sand' ? 'Getarnt im Sand' : d.stealth === 'still' ? 'Getarnt, solange still' : 'Immer getarnt');
+    if (d.stealth) tags.push(d.stealth === 'sand' ? 'Getarnt auf der Straße' : d.stealth === 'still' ? 'Getarnt, solange still' : 'Immer getarnt');
     if (d.shield) tags.push('Schild');
+    if (d.medic) tags.push(`Versorgt Nachbarn +${d.medic}/Runde`);
     if (d.tough || d.elite) tags.push(`Erleidet ${Math.round((d.tough || d.elite) * 100)} % Schaden`);
     return `<div class="pi-desc">${d.desc}</div><div class="pi-tags">${tags.map((x) => `<span>${x}</span>`).join('')}</div>
       ${w ? `<div class="pi-row good"><b>Stark gegen</b> ${strong.join(', ') || '—'}</div><div class="pi-row bad"><b>Schwach gegen</b> ${weak.join(', ') || '—'}</div>` : '<div class="pi-row"><b>Unbewaffnet</b></div>'}
@@ -1320,13 +1321,13 @@ export class Controller {
       }
     } else if (b.type === 'kontor') {
       const can = g.canDrop(0);
-      title = !g.active(b) ? 'Kontor außer Betrieb' : p.low ? 'Energie zu niedrig' : p.dropCd > 0 ? `Fixerin wieder bereit in ${p.dropCd} ${p.dropCd === 1 ? 'Runde' : 'Runden'}` : p.freeDrop ? 'AV-Drop — der nächste ist kostenlos' : 'AV-Drop (landet nächste Runde)';
+      title = !g.active(b) ? 'Fixer-Büro außer Betrieb' : p.low ? 'Energie zu niedrig' : p.dropCd > 0 ? `Fixerin wieder bereit in ${p.dropCd} ${p.dropCd === 1 ? 'Runde' : 'Runden'}` : p.freeDrop ? 'AV-Drop — der nächste ist kostenlos' : 'AV-Drop (landet nächste Runde)';
       const html = Object.entries(DROPS).map(([id, d]) => {
         const cost = g.dropCost(0, id), ok = can && p.credits >= cost;
         return `<button class="drop ${ok ? '' : 'locked'}" data-a="orbital" data-t="${id}"><b>${d.name}</b><span>${d.desc}</span><em>◈ ${cost}</em></button>`;
       }).join('');
       const sc = p.strikeCd || 0, sok = g.canStrike(0);
-      const strike = `<div class="p-title">Satellitenschlag</div><button class="drop ${sok ? '' : 'locked'}" data-a="strike"><b>Bombardement anfordern</b><span>Trifft das Zielfeld und alle Nachbarn zu Beginn eurer nächsten Runde: ${ORBITAL_STRIKE.unitDmg} Schaden an Einheiten, ${ORBITAL_STRIKE.bldDmg * 100} % an Gebäuden. Der Feind sieht die Zielmarkierung.${sc ? ` Bereit in ${sc} ${sc === 1 ? 'Runde' : 'Runden'}.` : ''}</span><em>◈ ${ORBITAL_STRIKE.cost}</em></button>`;
+      const strike = `<div class="p-title">Satellitenschlag</div><button class="drop ${sok ? '' : 'locked'}" data-a="strike"><b>Schlag anfordern</b><span>Trifft das Zielfeld und alle Nachbarn zu Beginn eurer nächsten Runde: ${ORBITAL_STRIKE.unitDmg} Schaden an Einheiten, ${ORBITAL_STRIKE.bldDmg * 100} % an Gebäuden. Der Feind sieht die Zielmarkierung.${sc ? ` Bereit in ${sc} ${sc === 1 ? 'Runde' : 'Runden'}.` : ''}</span><em>◈ ${ORBITAL_STRIKE.cost}</em></button>`;
       const eg = ENDGAME[p.faction];
       let endg = '';
       if (eg) {
@@ -1358,7 +1359,7 @@ export class Controller {
     const sel = this.r.hl.sel;
     this.clearHL(); this.r.hl.sel = sel; this.mode = 'build'; this.buildType = t;
     this.r.hl.build = g.buildHexes(0, t);
-    if (!this.r.hl.build.length) { this.flash('Kein freies Felsfeld in Reichweite der Basis'); this.mode = 'idle'; return; }
+    if (!this.r.hl.build.length) { this.flash('Kein freies Betonfeld in Reichweite der Basis'); this.mode = 'idle'; return; }
     this.flash(`${d.name}: grünes Feld antippen`);
     // Menü einklappen, damit alle Bauplätze frei liegen
     $('#panel').classList.remove('show');
@@ -1384,16 +1385,16 @@ export class Controller {
     if (a === 'cancelprod') { g.cancelProduce(e); this.refresh(); this.showPanel(e); return; }
     if (a === 'capture' || a === 'infiltrate') { this.mode = a; this.clearHL(); this.r.hl.sel = e; this.r.hl.target = g.adjBuildings(e, true).map((b) => [b.c, b.r]); this.flash('Feindliches Gebäude antippen'); return; }
     if (a === 'repair') { this.mode = 'repair'; this.clearHL(); this.r.hl.sel = e; this.r.hl.target = g.adjBuildings(e, false).filter((b) => b.hp < b.maxHp).map((b) => [b.c, b.r]); this.flash('Eigenes Gebäude antippen'); return; }
-    if (a === 'callworm') { this.mode = 'callworm'; this.clearHL(); this.r.hl.sel = e; this.r.hl.target = g.callWormHexes(e); this.flash('Sandfeld für den Psycho antippen (bis 5 Felder)'); return; }
+    if (a === 'callworm') { this.mode = 'callworm'; this.clearHL(); this.r.hl.sel = e; this.r.hl.target = g.callWormHexes(e); this.flash('Straßenfeld für die Psycho-Rotte antippen (bis 5 Felder)'); return; }
     if (a === 'endgame') {
       if (!g.canEndgame(0)) { this.flash('Entscheidungsschlag noch nicht verfügbar'); return; }
       this.clearHL(); this.mode = 'endgame'; this.r.hl.target = g.endgameHexes(0); $('#panel').classList.remove('show'); this.flash(`${ENDGAME[g.players[0].faction].name}: Zielfeld antippen`); return;
     }
     if (a === 'strike') {
-      if (!g.canStrike(0)) { this.flash(g.players[0].credits < ORBITAL_STRIKE.cost ? 'Zu wenig Credits' : 'Bombardement noch nicht bereit'); return; }
-      this.clearHL(); this.mode = 'strike'; this.r.hl.target = g.strikeHexes(0); $('#panel').classList.remove('show'); this.flash('Zielfeld für das Bombardement antippen (trifft 7 Felder)'); return;
+      if (!g.canStrike(0)) { this.flash(g.players[0].credits < ORBITAL_STRIKE.cost ? 'Zu wenig Credits' : 'Satellit noch nicht bereit'); return; }
+      this.clearHL(); this.mode = 'strike'; this.r.hl.target = g.strikeHexes(0); $('#panel').classList.remove('show'); this.flash('Zielfeld für den Satellitenschlag antippen (trifft 7 Felder)'); return;
     }
-    if (a === 'thump') { this.mode = 'thump'; this.clearHL(); this.r.hl.sel = e; this.r.hl.target = g.thumpHexes(e); this.flash('Sandfeld für den Störsender antippen (bis 2 Felder)'); return; }
+    if (a === 'thump') { this.mode = 'thump'; this.clearHL(); this.r.hl.sel = e; this.r.hl.target = g.thumpHexes(e); this.flash('Straßenfeld für den Störsender antippen (bis 2 Felder)'); return; }
     if (a === 'voice') { this.mode = 'voice'; this.clearHL(); this.r.hl.sel = e; this.r.hl.target = g.voiceTargets(e).map((t) => [t.c, t.r]); this.flash('Ziel für die Stimme antippen'); return; }
     if (a === 'orbital') {
       const cost = g.dropCost(0, t);
@@ -1411,7 +1412,7 @@ export class Controller {
     const can = g.canPlayCard(0) && !this.busy;
     const hand = p.cards.map((id, i) => `<div class="icard"><canvas data-card="${id}"></canvas><b>${CARDS[id].name}</b><p>${CARDS[id].desc}</p><button class="primary" data-i="${i}" ${can ? '' : 'disabled'}>Ausspielen</button></div>`).join('');
     const has = g.has(0, 'konvent');
-    el.innerHTML = `<div class="box"><button class="close">×</button><h2>Hacks der Netrunner-Kollektiv</h2>
+    el.innerHTML = `<div class="box"><button class="close">×</button><h2>Hacks des Netrunner-Kollektivs</h2>
       <div class="sub">${has ? `Neue Karte in ${3 - p.cardTimer} ${3 - p.cardTimer === 1 ? 'Runde' : 'Runden'} · ` : 'Baut einen Netzknoten, um Karten zu erhalten · '}Eine Karte pro Runde${can ? '' : ' — diese Runde schon gespielt'}</div>
       <div class="hand">${hand || '<p class="empty">Keine Karten auf der Hand.</p>'}</div></div>`;
     el.querySelectorAll('canvas[data-card]').forEach((c) => { const src = cardArt(c.dataset.card); c.width = 120; c.height = 80; c.getContext('2d').drawImage(src, 0, 0); });

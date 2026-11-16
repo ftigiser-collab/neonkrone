@@ -17,7 +17,7 @@ document.querySelectorAll('#menu [data-fac]').forEach((b) => {
   b.onclick = () => { faction = b.dataset.fac; document.querySelectorAll('#menu [data-fac]').forEach((x) => x.classList.toggle('on', x === b)); };
 });
 let saved = null;
-try { saved = JSON.parse(localStorage.getItem('sandthron-save') || 'null'); } catch (e) { saved = null; }
+try { saved = JSON.parse(localStorage.getItem('neonkrone-save') || 'null'); } catch (e) { saved = null; }
 if (saved && saved.v === 2) { const c = $('#continue'); c.style.display = 'block'; c.textContent = `Fortsetzen (Runde ${saved.round})`; c.onclick = () => start(saved); }
 
 document.querySelectorAll('#menu [data-diff]').forEach((b) => {
@@ -28,7 +28,7 @@ $('#campaignbtn').onclick = () => showCampaign();
 function showCampaign() {
   const prog = campaignProgress();
   const el = $('#campaign');
-  el.innerHTML = `<div class="box"><button class="close">×</button><h2>Kampagne: Der Sand von Askar</h2><div class="sub">Haus Vareth gegen Haus Kordan · ${prog} von ${MISSIONS.length} Missionen erfüllt</div>
+  el.innerHTML = `<div class="box"><button class="close">×</button><h2>Kampagne: Nächte in Velvet Bay</h2><div class="sub">Kashiro gegen Valkor · ${prog} von ${MISSIONS.length} Missionen erfüllt</div>
     <div class="mlist">${MISSIONS.map((m, i) => `<button class="mcard ${i > prog ? 'locked' : ''} ${i < prog ? 'done' : ''}" data-i="${i}" ${i > prog ? 'disabled' : ''}>
       <span class="mnum">${i + 1}</span><b>${m.title}</b><span>${m.place}</span><em>${i < prog ? 'Erfüllt' : i === prog ? 'Bereit' : 'Gesperrt'}</em></button>`).join('')}</div></div>`;
   el.classList.add('show');
@@ -45,7 +45,7 @@ function showBriefing(m) {
   el.querySelector('#bback').onclick = () => showCampaign();
   el.querySelector('#bgo').onclick = () => { el.classList.remove('show'); start(null, m); };
 }
-try { if (sessionStorage.getItem('sandthron-open-campaign')) { sessionStorage.removeItem('sandthron-open-campaign'); showCampaign(); } } catch {}
+try { if (sessionStorage.getItem('neonkrone-open-campaign')) { sessionStorage.removeItem('neonkrone-open-campaign'); showCampaign(); } } catch {}
 
 async function start(save, mission) {
   $('#menu .loading').classList.add('show');
@@ -93,7 +93,7 @@ async function start(save, mission) {
   };
   requestAnimationFrame(loop);
   if (!save) {
-    game.say('Willkommen auf Sandthron. Baut eure Basis aus und erntet Chrom.', 'info');
+    game.say('Willkommen in Velvet Bay. Baut eure Basis aus und sammelt Chrom.', 'info');
     game.say('Tipp: Kommandoblock antippen, um Gebäude zu errichten.', 'info');
   }
   if (!save) ctrl.save();

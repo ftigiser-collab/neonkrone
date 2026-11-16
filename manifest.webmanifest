@@ -1,15 +1,17 @@
 {
-  "name": "Sandthron",
-  "short_name": "Sandthron",
-  "description": "Rundenstrategie auf einem Wüstenplaneten",
+  "id": "/neonkrone/",
+  "name": "Neonkrone",
+  "short_name": "Neonkrone",
+  "description": "Rundenstrategie in einer Cyberpunk-Metropole",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
   "orientation": "any",
-  "background_color": "#120d0a",
-  "theme_color": "#1a120c",
+  "background_color": "#07060f",
+  "theme_color": "#07060f",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

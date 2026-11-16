@@ -1,4 +1,4 @@
-// Kampagne: fünf Missionen auf Askar
+// Kampagne: fünf Missionen in Velvet Bay
 import { ring, distance } from './hex.js';
 
 const P = 0, E = 1;
@@ -23,14 +23,14 @@ function placeUnits(g, o, near, types) {
 
 export const MISSIONS = [
   {
-    id: 'm1', title: 'Erster Sand', place: 'Askar · Südliche Ebenen', seed: 1101, diff: 'leicht',
-    speaker: 'Feldkommandant Darr',
+    id: 'm1', title: 'Erste Schicht', place: 'Velvet Bay · Hafenviertel', seed: 1101, diff: 'leicht',
+    speaker: 'Einsatzleiterin Mori',
     briefing: [
-      'Willkommen auf Askar, Kommandant. Haus Vareth hat das Lehen über die südlichen Ebenen erhalten — und mit ihm die Pflicht, Chrom zu liefern.',
-      'Baut eine Stromzelle, dann eine Schmelze. Der Sammler, der mit ihr kommt, ist kostbarer als jeder Panzer. Haltet ihn von offenem Sand fern, wenn die Erde zu zittern beginnt.',
-      'Haus Kordan beobachtet uns vom Norden aus. Noch greifen sie nicht an.',
+      'Willkommen in Velvet Bay, Kommandant. Kashiro hat die Schürfrechte im Hafenviertel ersteigert — und mit ihnen die Pflicht, Chrom zu liefern.',
+      'Baut eine Stromzelle, dann eine Schmelze. Der Sammler, der mit ihr kommt, ist kostbarer als jeder Panzer. Holt ihn von der Straße, wenn die Psycho-Signale ausschlagen.',
+      'Valkor beobachtet uns vom Nordufer aus. Noch greifen sie nicht an.',
     ],
-    objectives: ['Eine Schmelze errichten', '2.000 Chrom ernten'],
+    objectives: ['Eine Schmelze errichten', '2.000 Chrom sammeln'],
     setup(g) {
       g.aiPassive = true;
       g.players[E].incomeMult = 0;
@@ -41,20 +41,20 @@ export const MISSIONS = [
       const h = g.players[P].stats.harvested;
       const lines = [
         { text: 'Schmelze errichten', ok: done(g, P, 'raffinerie') },
-        { text: `Chrom ernten: ${Math.min(2000, h)} / 2.000`, ok: h >= 2000 },
+        { text: `Chrom sammeln: ${Math.min(2000, h)} / 2.000`, ok: h >= 2000 },
       ];
       return { lines, done: lines.every((l) => l.ok), failed: false };
     },
   },
   {
-    id: 'm2', title: 'Die Tiefe Stadt', place: 'Askar · Das Meer der Trümmer', seed: 2207, diff: 'leicht',
-    speaker: 'Meisterin Ilwen vom Netzknoten',
+    id: 'm2', title: 'Die Ödnis', place: 'Velvet Bay · Eingestürzte Hochtrasse', seed: 2207, diff: 'leicht',
+    speaker: 'Ghost, Netrunnerin',
     briefing: [
-      'Die nahen Felder sind erschöpft. Die reichen Adern liegen draußen, im Meer der Trümmer — dort, wo die Alten schlafen.',
-      'Der Rat hat euch einen Schweber-Hangar und einen Träger überlassen. Lasst ihn eure Sammler holen, bevor der Sand sich öffnet. Man sagt, einer der Uralten wandert in diesem Gebiet.',
-      'Liefert 5.000 Chrom bis zur zwanzigsten Runde. Verliert ihr mehr als drei Sammler, wird der Rat das Lehen neu vergeben.',
+      'Die nahen Lager sind leergeräumt. Das gute Chrom liegt draußen unter der eingestürzten Hochtrasse — dort, wo keiner mehr bei Verstand ist.',
+      'Kashiro hat euch einen Schweber-Hangar und einen Träger überlassen. Lasst ihn eure Sammler holen, bevor die Psychos sie finden. Die Polizei meldet einen Amok-Mech in diesem Sektor.',
+      'Liefert 5.000 Chrom bis zur zwanzigsten Runde. Verliert ihr mehr als drei Sammler, vergibt der Vorstand die Rechte neu.',
     ],
-    objectives: ['5.000 Chrom ernten bis Runde 20', 'Höchstens 3 Sammler verlieren'],
+    objectives: ['5.000 Chrom sammeln bis Runde 20', 'Höchstens 3 Sammler verlieren'],
     setup(g) {
       g.aiPassive = true;
       g.players[E].incomeMult = 0.5;
@@ -73,19 +73,19 @@ export const MISSIONS = [
     check(g) {
       const h = g.players[P].stats.harvested, lost = harvLost(g);
       const lines = [
-        { text: `Chrom ernten: ${Math.min(5000, h)} / 5.000 (Runde ${g.round} von 20)`, ok: h >= 5000 },
+        { text: `Chrom sammeln: ${Math.min(5000, h)} / 5.000 (Runde ${g.round} von 20)`, ok: h >= 5000 },
         { text: `Sammler verloren: ${lost} von höchstens 3`, ok: lost <= 3 },
       ];
       return { lines, done: h >= 5000, failed: lost > 3 || (g.round > 20 && h < 5000) };
     },
   },
   {
-    id: 'm3', title: 'Außenposten Varn', place: 'Askar · Die Varn-Klippen', seed: 3313, diff: 'normal',
-    speaker: 'Feldkommandant Darr',
+    id: 'm3', title: 'Außenposten Pier 9', place: 'Velvet Bay · Containerhafen', seed: 3313, diff: 'normal',
+    speaker: 'Einsatzleiterin Mori',
     briefing: [
-      'Kordan hat an den Varn-Klippen einen Außenposten errichtet, mitten in unserem Lehen. Von dort überfallen sie unsere Sammler.',
-      'Der Posten hat keinen Kommandoblock — er kann sich nicht erweitern, aber seine Geschütztürme sind gut gestellt. Ihr erhaltet eine Panzerkolonne und einen Raketenwerfer.',
-      'Macht den Posten dem Sand gleich. Jedes Gebäude.',
+      'Valkor hat an Pier 9 einen Außenposten errichtet, mitten in unserem Sektor. Von dort überfallen sie unsere Sammler.',
+      'Der Posten hat keinen Kommandoblock — er kann sich nicht erweitern, aber seine Wachgeschütze sind gut gestellt. Ihr erhaltet eine Panzerkolonne und einen Raketenwerfer.',
+      'Macht den Posten platt. Jedes Gebäude.',
     ],
     objectives: ['Alle feindlichen Gebäude zerstören'],
     setup(g) {
@@ -108,11 +108,11 @@ export const MISSIONS = [
     },
   },
   {
-    id: 'm4', title: 'Smogfront', place: 'Askar · Die Glasebene', seed: 4421, diff: 'normal',
-    speaker: 'Meisterin Ilwen vom Netzknoten',
+    id: 'm4', title: 'Smogfront', place: 'Velvet Bay · Industriezone Süd', seed: 4421, diff: 'normal',
+    speaker: 'Ghost, Netrunnerin',
     briefing: [
-      'Kordan hat sich mit der Fixerin Vex verbündet. Ihr Kontor auf der Glasebene bringt ihnen Truppen aus dem Orbit — schneller, als wir sie aufhalten können.',
-      'Ein großer Smog zieht über die Ebene. Nutzt ihn, oder er nutzt euch. Auch wir haben ein Kontor erhalten.',
+      'Valkor hat sich mit der Fixerin Vex verbündet. Ihr Büro in der Industriezone bringt ihnen Söldner per AV — schneller, als wir sie aufhalten können.',
+      'Eine dichte Smogfront zieht über die Zone. Nutzt sie, oder sie nutzt euch. Auch wir haben ein Fixer-Büro erhalten.',
       'Zerstört das feindliche Fixer-Büro vor der achtzehnten Runde.',
     ],
     objectives: ['Feindliches Fixer-Büro zerstören', 'Vor Runde 18'],
@@ -137,12 +137,12 @@ export const MISSIONS = [
     },
   },
   {
-    id: 'm5', title: 'Der Sandthron', place: 'Askar · Die Thronfeste', seed: 5539, diff: 'schwer',
-    speaker: 'Feldkommandant Darr',
+    id: 'm5', title: 'Die Neonkrone', place: 'Velvet Bay · Valkor-Turm', seed: 5539, diff: 'schwer',
+    speaker: 'Einsatzleiterin Mori',
     briefing: [
-      'Das ist es, Kommandant. Haus Kordan hat sich in der Thronfeste verschanzt — der alten Festung, nach der dieser Planet benannt ist.',
-      'Wer den Sandthron hält, hält Askar. Kordan hat alles aufgeboten, was es hat: Schweber, Söldner der Fixerin, die Hexen des Netzknotens.',
-      'Vernichtet Haus Kordan.',
+      'Das ist es, Kommandant. Valkor hat sich am Fuß seines Turms verschanzt — die leuchtende Spitze nennen sie in der Stadt nur die Neonkrone.',
+      'Wer die Krone hält, hält Velvet Bay. Valkor hat alles aufgeboten, was es hat: Schweber, Söldner der Fixerin, eigene Netrunner.',
+      'Vernichtet Valkor Defense in Velvet Bay.',
     ],
     objectives: ['Alle feindlichen Gebäude zerstören'],
     setup(g) {
@@ -159,6 +159,6 @@ export const MISSIONS = [
   },
 ];
 
-export function campaignProgress() { try { return Number(localStorage.getItem('sandthron-campaign') || 0); } catch { return 0; } }
-export function setProgress(n) { try { if (n > campaignProgress()) localStorage.setItem('sandthron-campaign', String(n)); } catch {} }
+export function campaignProgress() { try { return Number(localStorage.getItem('neonkrone-campaign') || 0); } catch { return 0; } }
+export function setProgress(n) { try { if (n > campaignProgress()) localStorage.setItem('neonkrone-campaign', String(n)); } catch {} }
 export function missionById(id) { return MISSIONS.find((m) => m.id === id); }
