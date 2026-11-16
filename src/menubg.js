@@ -1,129 +1,100 @@
-// Animierter Menühintergrund: Dünen in der Dämmerung, zwei Monde, Thopter, ein Wurm
-import { Noise } from './util.js';
-
+// Animierter Menühintergrund: nächtliche Skyline im Regen, Neonreklame, Schweber, Suchscheinwerfer
 export function startMenuBg(host) {
   const cv = document.createElement('canvas');
   cv.className = 'menubg';
   host.prepend(cv);
   const ctx = cv.getContext('2d');
-  const N = new Noise(77);
-  let W = 0, H = 0, dpr = 1, stars = [], static_ = null;
+  let W = 0, H = 0, dpr = 1, city = null, rain = [], avs = [];
+  const NEON = ['255,46,136', '46,240,255', '255,170,40', '170,90,255', '60,255,150'];
+  let seed = 4242; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+
+  function buildCity() {
+    city = document.createElement('canvas'); city.width = W * dpr; city.height = H * dpr;
+    const c = city.getContext('2d'); c.scale(dpr, dpr);
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#05040c'); g.addColorStop(0.5, '#1a0c2a'); g.addColorStop(0.78, '#4a1640'); g.addColorStop(1, '#0a0612');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    // Smogglühen über der Stadt
+    const s = c.createRadialGradient(W * 0.55, H * 0.85, 0, W * 0.55, H * 0.85, H * 0.8);
+    s.addColorStop(0, 'rgba(255,60,140,0.35)'); s.addColorStop(0.4, 'rgba(120,40,160,0.18)'); s.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = s; c.fillRect(0, 0, W, H);
+    // drei Ebenen Hochhäuser, hinten blass, vorne dunkel mit Fenstern und Reklame
+    for (const [layer, base, hmax, col, wins] of [[0, 0.72, 0.5, '#1a1428', 0.08], [1, 0.82, 0.62, '#110d1c', 0.16], [2, 0.95, 0.75, '#07060d', 0.26]]) {
+      let x = -20;
+      while (x < W + 20) {
+        const w = 30 + rnd() * (60 + layer * 30), h = H * (0.12 + rnd() * hmax) * (layer === 0 ? 0.8 : 1);
+        const top = H * base - h;
+        c.fillStyle = col; c.fillRect(x, top, w, H - top);
+        // Turmspitze für die höchsten
+        if (h > H * 0.45) { c.fillRect(x + w * 0.4, top - 30, w * 0.2, 30); c.fillStyle = 'rgba(255,50,60,0.9)'; c.fillRect(x + w * 0.5 - 1, top - 33, 2, 3); c.fillStyle = col; }
+        // Fenster
+        for (let yy = top + 6; yy < H; yy += 7) for (let xx = x + 4; xx < x + w - 4; xx += 6) {
+          if (rnd() > wins) continue;
+          const q = rnd(); c.fillStyle = q < 0.6 ? `rgba(255,205,140,${0.35 + layer * 0.15})` : `rgba(110,230,255,${0.3 + layer * 0.15})`;
+          c.fillRect(xx, yy, 2.5, 2);
+        }
+        // Leuchtreklame an der Fassade
+        if (layer > 0 && rnd() < 0.45) {
+          const nc = NEON[Math.floor(rnd() * NEON.length)], vertical = rnd() < 0.5;
+          const sx = x + w * (0.2 + rnd() * 0.5), sy = top + 20 + rnd() * h * 0.4;
+          c.shadowColor = `rgba(${nc},1)`; c.shadowBlur = 14; c.fillStyle = `rgba(${nc},0.9)`;
+          if (vertical) { c.fillRect(sx, sy, 7, 40 + rnd() * 40); c.fillStyle = 'rgba(20,10,20,0.8)'; for (let k = sy + 4; k < sy + 70; k += 9) c.fillRect(sx + 2, k, 3, 5); }
+          else { c.fillRect(sx, sy, 30 + rnd() * 30, 8); }
+          c.shadowBlur = 0;
+        }
+        x += w + rnd() * 6;
+      }
+    }
+    // Straßenschlucht unten: Lichterkette
+    const lg = c.createLinearGradient(0, H * 0.93, 0, H);
+    lg.addColorStop(0, 'rgba(255,120,180,0)'); lg.addColorStop(1, 'rgba(255,120,180,0.25)');
+    c.fillStyle = lg; c.fillRect(0, H * 0.9, W, H * 0.1);
+  }
 
   function resize() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
     W = host.clientWidth; H = host.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
-    stars = Array.from({ length: 140 }, () => ({ x: Math.random() * W, y: Math.random() * H * 0.5, r: Math.random() * 1.2 + 0.2, p: Math.random() * 6 }));
-    static_ = null;
+    seed = 4242; buildCity();
+    rain = Array.from({ length: 220 }, () => ({ x: Math.random() * W, y: Math.random() * H, l: 8 + Math.random() * 18, s: 500 + Math.random() * 400 }));
+    avs = Array.from({ length: 4 }, (_, i) => ({ x: Math.random() * W, y: H * (0.15 + i * 0.12), v: (20 + Math.random() * 30) * (i % 2 ? -1 : 1), b: Math.random() * 6 }));
   }
   resize();
   window.addEventListener('resize', resize);
 
-  const ridge = (y0, amp, f, ph, oct = 3) => (x) => {
-    let v = 0, a = 1, fr = f;
-    for (let o = 0; o < oct; o++) { v += (N.v(x * fr + ph + o * 13, o * 7) - 0.5) * a; a *= 0.5; fr *= 2.1; }
-    return y0 + v * amp;
-  };
-
-  function drawSky(c) {
-    const g = c.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#1a0f24'); g.addColorStop(0.35, '#4a2238'); g.addColorStop(0.55, '#a8482a'); g.addColorStop(0.68, '#e98a3e'); g.addColorStop(1, '#3a1d0e');
-    c.fillStyle = g; c.fillRect(0, 0, W, H);
-    // Sonnenglut am Horizont
-    const s = c.createRadialGradient(W * 0.68, H * 0.62, 0, W * 0.68, H * 0.62, H * 0.6);
-    s.addColorStop(0, 'rgba(255,214,140,0.85)'); s.addColorStop(0.15, 'rgba(255,170,90,0.45)'); s.addColorStop(1, 'rgba(255,120,60,0)');
-    c.fillStyle = s; c.fillRect(0, 0, W, H);
-    // Großer Mond
-    const mx = W * 0.22, my = H * 0.2, mr = Math.min(W, H) * 0.09;
-    const mg = c.createRadialGradient(mx - mr * 0.3, my - mr * 0.3, mr * 0.1, mx, my, mr);
-    mg.addColorStop(0, '#f6e6d0'); mg.addColorStop(1, '#b89a86');
-    c.fillStyle = mg; c.beginPath(); c.arc(mx, my, mr, 0, 6.28); c.fill();
-    c.fillStyle = 'rgba(120,90,80,0.35)';
-    for (let k = 0; k < 9; k++) { const a = k * 2.3, d = mr * (0.2 + (k % 4) * 0.18); c.beginPath(); c.arc(mx + Math.cos(a) * d, my + Math.sin(a) * d, mr * (0.08 + (k % 3) * 0.05), 0, 6.28); c.fill(); }
-    c.fillStyle = 'rgba(40,20,40,0.35)'; c.beginPath(); c.arc(mx + mr * 0.35, my + mr * 0.1, mr * 0.95, 0, 6.28); c.fill();
-    const halo = c.createRadialGradient(mx, my, mr, mx, my, mr * 2.4); halo.addColorStop(0, 'rgba(255,230,210,0.18)'); halo.addColorStop(1, 'rgba(255,230,210,0)');
-    c.fillStyle = halo; c.beginPath(); c.arc(mx, my, mr * 2.4, 0, 6.28); c.fill();
-    // Kleiner Mond
-    const sx = W * 0.32, sy = H * 0.1, sr = mr * 0.32;
-    c.fillStyle = '#d8c2ae'; c.beginPath(); c.arc(sx, sy, sr, 0, 6.28); c.fill();
-    c.fillStyle = 'rgba(40,20,40,0.4)'; c.beginPath(); c.arc(sx + sr * 0.4, sy, sr * 0.9, 0, 6.28); c.fill();
-    // ferne Tafelberge
-    const mesa = ridge(H * 0.6, H * 0.08, 0.004, 3, 4);
-    c.fillStyle = 'rgba(110,50,40,0.55)';
-    c.beginPath(); c.moveTo(0, H);
-    for (let x = 0; x <= W; x += 4) { let y = mesa(x); const flat = N.v(x * 0.006, 50); if (flat > 0.55) y = Math.min(y, H * 0.56); c.lineTo(x, y); }
-    c.lineTo(W, H); c.fill();
-  }
-
-  function dune(c, t, y0, amp, f, speed, cTop, cBot, rim) {
-    const base = ridge(y0, amp * 0.5, f * 0.6, t * speed + 9, 2);
-    const fn = (x) => { const n = N.v(x * f + t * speed * 3, 3.3), cr = 1 - Math.abs(2 * n - 1); return base(x) - cr * cr * amp; };
-    const g = c.createLinearGradient(0, y0 - amp, 0, H);
-    g.addColorStop(0, cTop); g.addColorStop(1, cBot);
-    c.fillStyle = g; c.beginPath(); c.moveTo(0, H);
-    const pts = [];
-    for (let x = 0; x <= W + 4; x += 4) { const y = fn(x); pts.push([x, y]); c.lineTo(x, y); }
-    c.lineTo(W, H); c.fill();
-    // Leeseite: versetzte Kammlinie bildet eine weiche, gebogene Schattenfläche
-    c.save(); c.beginPath(); c.moveTo(0, H); for (const [x, y] of pts) c.lineTo(x, y); c.lineTo(W, H); c.clip();
-    const sh = c.createLinearGradient(0, y0 - amp, 0, y0 + amp * 2);
-    sh.addColorStop(0, 'rgba(40,12,24,0.5)'); sh.addColorStop(1, 'rgba(40,12,24,0.05)');
-    c.fillStyle = sh; c.beginPath(); c.moveTo(0, H);
-    for (let x = 0; x <= W + 4; x += 4) c.lineTo(x, fn(x + 70) + amp * 0.25);
-    c.lineTo(W, H); c.closePath();
-    // Schatten liegt über der Kammlinie (Leeseite) — Differenzfläche
-    c.globalCompositeOperation = 'source-atop';
-    c.fill('evenodd');
-    c.restore();
-    // Kammlicht und Schattenseite
-    c.strokeStyle = rim; c.lineWidth = 1.2; c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
-    return fn;
-  }
-
-  const thopters = [];
-  let wormX = -300, wormNext = 1;
-  let last = performance.now(), t = 0, running = true;
-
+  let last = performance.now(), t = 0, raf = 0, stopped = false;
   function frame(now) {
-    if (!running) return;
-    const dt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; t += dt;
-    if (!static_) { static_ = document.createElement('canvas'); static_.width = cv.width; static_.height = cv.height; const sc = static_.getContext('2d'); sc.scale(dpr, dpr); drawSky(sc); }
-    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(static_, 0, 0);
+    if (stopped) return;
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(city, 0, 0);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    for (const s of stars) { ctx.fillStyle = `rgba(255,240,230,${(0.35 + 0.35 * Math.sin(t * 2 + s.p)) * (1 - s.y / (H * 0.5))})`; ctx.fillRect(s.x, s.y, s.r, s.r); }
-    // Thopter
-    if (Math.random() < dt * 0.25 && thopters.length < 3) thopters.push({ x: -40, y: H * (0.18 + Math.random() * 0.25), s: 0.6 + Math.random() * 0.7, v: 40 + Math.random() * 40 });
-    for (const th of thopters) {
-      th.x += th.v * dt; const y = th.y + Math.sin(t * 1.5 + th.x * 0.01) * 6;
-      ctx.save(); ctx.translate(th.x, y); ctx.scale(th.s, th.s); ctx.fillStyle = 'rgba(30,14,22,0.85)';
-      ctx.beginPath(); ctx.ellipse(0, 0, 14, 3.5, 0, 0, 6.28); ctx.fill(); ctx.fillRect(-22, -1, 10, 2);
-      const fl = Math.sin(t * 40) * 6;
-      ctx.beginPath(); ctx.moveTo(-2, -1); ctx.lineTo(-10, -8 - fl); ctx.lineTo(8, -8 - fl); ctx.lineTo(4, -1); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(-2, 1); ctx.lineTo(-8, 5 + fl * 0.3); ctx.lineTo(6, 5 + fl * 0.3); ctx.lineTo(4, 1); ctx.fill();
-      ctx.restore();
+    // Suchscheinwerfer
+    ctx.globalCompositeOperation = 'lighter';
+    for (const [x0, ph] of [[W * 0.3, 0], [W * 0.75, 2]]) {
+      const a = -Math.PI / 2 + Math.sin(t * 0.35 + ph) * 0.5;
+      const g = ctx.createLinearGradient(x0, H, x0 + Math.cos(a) * H, H + Math.sin(a) * H); g.addColorStop(0, 'rgba(180,200,255,0.12)'); g.addColorStop(1, 'rgba(180,200,255,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x0, H); ctx.lineTo(x0 + Math.cos(a - 0.05) * H * 1.2, H + Math.sin(a - 0.05) * H * 1.2); ctx.lineTo(x0 + Math.cos(a + 0.05) * H * 1.2, H + Math.sin(a + 0.05) * H * 1.2); ctx.closePath(); ctx.fill();
     }
-    for (let i = thopters.length - 1; i >= 0; i--) if (thopters[i].x > W + 60) thopters.splice(i, 1);
-    // Dünenschichten
-    dune(ctx, t, H * 0.7, H * 0.08, 0.003, 0.02, '#a0502a', '#5a2a14', 'rgba(255,190,120,0.5)');
-    const mid = dune(ctx, t, H * 0.8, H * 0.1, 0.0025, 0.04, '#8a4422', '#3e1d0e', 'rgba(255,200,130,0.55)');
-    // Wurm unter dem Sand der mittleren Düne
-    wormNext -= dt;
-    if (wormNext <= 0 && wormX < -200) { wormX = -120; wormNext = 14; }
-    if (wormX > -200) {
-      wormX += 70 * dt;
-      ctx.fillStyle = 'rgba(70,32,16,0.75)';
-      ctx.beginPath();
-      for (let x = wormX - 160; x <= wormX; x += 4) { const k = (x - wormX + 160) / 160, y = mid(x) - Math.sin(k * Math.PI) * 10 * k; x === wormX - 160 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
-      ctx.lineTo(wormX, mid(wormX) + 4); ctx.lineTo(wormX - 160, mid(wormX - 160) + 4); ctx.fill();
-      for (let k = 0; k < 3; k++) { const x = wormX - Math.random() * 30, y = mid(x) - 6; ctx.fillStyle = `rgba(230,170,110,${0.3 * Math.random()})`; ctx.beginPath(); ctx.arc(x, y - Math.random() * 14, 3 + Math.random() * 6, 0, 6.28); ctx.fill(); }
-      if (wormX > W + 200) wormX = -300;
+    // Schweber mit Positionslichtern
+    for (const a of avs) {
+      a.x += a.v * dt; if (a.x > W + 60) a.x = -60; if (a.x < -60) a.x = W + 60;
+      const y = a.y + Math.sin(t + a.b) * 4;
+      ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#0a0812'; ctx.fillRect(a.x - 14, y - 3, 28, 6); ctx.fillRect(a.x - 18, y - 1, 36, 2);
+      ctx.globalCompositeOperation = 'lighter';
+      const blink = Math.floor(t * 2 + a.b) % 2;
+      ctx.fillStyle = blink ? 'rgba(255,60,70,0.95)' : 'rgba(60,255,140,0.95)'; ctx.beginPath(); ctx.arc(a.x + (a.v > 0 ? 15 : -15), y, 1.6, 0, 6.28); ctx.fill();
+      const g = ctx.createRadialGradient(a.x, y + 6, 0, a.x, y + 6, 22); g.addColorStop(0, 'rgba(90,230,255,0.35)'); g.addColorStop(1, 'rgba(90,230,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(a.x, y + 6, 22, 0, 6.28); ctx.fill();
     }
-    dune(ctx, t, H * 0.92, H * 0.07, 0.002, 0.07, '#6a3218', '#24100a', 'rgba(255,190,120,0.4)');
-    // treibender Sand
-    ctx.strokeStyle = 'rgba(255,200,140,0.08)'; ctx.lineWidth = 1;
-    for (let k = 0; k < 40; k++) { const x = ((k * 97 + t * 160) % (W + 200)) - 100, y = H * 0.55 + (k * 53 % (H * 0.45)); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 50, y + 4); ctx.stroke(); }
-    requestAnimationFrame(frame);
+    // flackernde Neonfläche
+    if (Math.sin(t * 17) > 0.96) { ctx.fillStyle = 'rgba(255,40,140,0.05)'; ctx.fillRect(0, 0, W, H); }
+    ctx.globalCompositeOperation = 'source-over';
+    // Regen
+    ctx.strokeStyle = 'rgba(170,190,240,0.28)'; ctx.lineWidth = 1; ctx.beginPath();
+    for (const r of rain) { r.y += r.s * dt; r.x += r.s * dt * 0.12; if (r.y > H) { r.y = -20; r.x = Math.random() * W; } ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - r.l * 0.12, r.y - r.l); }
+    ctx.stroke();
+    raf = requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
-  return { stop() { running = false; window.removeEventListener('resize', resize); cv.remove(); } };
+  raf = requestAnimationFrame(frame);
+  return { stop() { stopped = true; cancelAnimationFrame(raf); window.removeEventListener('resize', resize); cv.remove(); } };
 }

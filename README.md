@@ -1,34 +1,34 @@
-# Sandthron
+# Neonkrone
 
-Rundenstrategie auf Hexfeldern, angelehnt an Dune 2000 und das Dune-Brettspiel, mit eigenen Fraktionen, Namen und Grafik. Läuft im Browser (PWA), am PC und auf dem Handy.
+Spin-off von [Sandthron](https://github.com/ftigiser-collab/sandthron): Rundenstrategie auf Hexfeldern im Cyberpunk-Setting, mit eigenen Fraktionen, Namen und Grafik. Läuft im Browser (PWA), am PC und auf dem Handy.
 
-**Spielen:** https://ftigiser-collab.github.io/sandthron/ (sobald GitHub Pages aktiv ist)
+**Spielen:** https://ftigiser-collab.github.io/neonkrone/ (sobald GitHub Pages aktiv ist)
 
-## Stand: Stufe 1 (Prototyp)
-- Prozedurale Hexkarte: Sand, Dünen, Fels, Gebirge, Glutfelder
-- Basisbau über den Bauhof (ein Gebäude pro Runde), Energie-System
-- 9 Gebäude, 9 Einheiten inklusive drei Thopter-Typen (Späher, Kampf mit Munition, Träger)
-- Kampf mit Gegenschlag, Geländedeckung und Schadensvorschau
-- Ernter-Kreislauf mit Auto-Ernte
-- Weltphase: wandernder Sturm mit Vorhersage, Würmer jagen Erschütterungen, Glutausbrüche
-- Gegner-KI mit Bauplan, Produktion, Sammeln, Angriffswellen, Verteidigung
-- Nebel des Krieges, Minikarte, Hilfe-Seite
+## Setting
+Velvet Bay, eine Megastadt im Dauerregen. Konzerne und Gangs kämpfen zwischen Megablocks um Chrom (Schrott, Cyberware, Schwarzware).
 
-## Stufe 2
-- Animationen: Zielen und Rückstoß, Trefferblitz, Wracks, Trümmer, Thopter-Absturz, Ausrücken, Entladestrom, Bau-Funken, Sturm-Blitze, Drop-Kapseln
-- Tag-Nacht-Zyklus (nachts Bodensicht −1, Lichter)
-- Gildenkontor mit Orbital-Drops (Söldnertrupp, Gilden-Söldner, Panzer, Ernter)
-- Konvent mit 8 Intrigenkarten (Stimme, Vorahnung, Wetterkunde, Klopfer, Verrat, Schildwall, Sabotage, Gildenschuld) und der Verhüllten Schwester
-- Bomber- und Abfang-Thopter
-- Drei Fraktionen mit eigenem Bonus
-- Autosave und Fortsetzen
-- KI nutzt Karten, Drops und die neuen Einheiten
+| Sandthron | Neonkrone |
+|---|---|
+| Glut, Ernter, Raffinerie | Chrom, Sammler, Schmelze |
+| Sand, Dünen, Fels, Gebirge | Straße, Trümmer, Beton, Megablock |
+| Sandwürmer (3 Größen) | Cyberpsychos: Einzeltäter, Psycho-Rotte, Amok-Mech |
+| Sandsturm | Smogfront |
+| Thopter | Schweber (AVs) mit Mantelpropellern |
+| Gilde, Orbital-Drops | Fixer-Büro, AV-Drops, Satellitenschlag |
+| Konvent, Intrigenkarten | Netzknoten, Hackkarten (Quickhacks) |
+| Felsenheiligtum | Trauma-Team-Posten |
 
-## Stufe 3 (in Arbeit)
-- Kampagne „Der Sand von Askar“ mit 5 Missionen, Briefings, Zielen und Fortschritt
-- Wurmgrößen, Sandgänger mit Klopfern, Balancing der Wirtschaft
+**Fraktionen:** Kashiro-Konzern (Schweber, Raiden-Gunship), Valkor Defense (Fahrzeuge, Inferno), Netzschatten (Netrunner, Phantom), Chromfresser (Gang, Psycho-Prediger).
+
+**Neu gegenüber Sandthron:** Trauma-Team-Schweber (Hangar oder AV-Drop), versorgt jede Runde alle eigenen Einheiten auf und neben seinem Feld.
+
+## Stand: Stufe 1
+- Komplettes Sandthron-Gerüst (Kampf, KI, Kampagne mit 5 Missionen, Karten, Drops, Endgame)
+- Stadtkarte mit Straßenraster, Fahrbahnmarkierungen, Megablock-Dächern, Fassaden, Neonleuchtschicht, Regen, Pfützenspiegelung
+- Schweber, Cyberpsychos, Störsender, Neon-Gebäudeschilder, neue Menü-Skyline
 
 ## Geplant
+- Eigene Gebäudegrafik im Cyberpunk-Stil, Bike und Mech neu, mehr Gang-Flair
 - **Später:** Sound und Musik
 
 ## Technik

@@ -1,7 +1,7 @@
 // Riesige Großraumschiffe für die Endgame-Schläge (Draufsicht, vorgerendert)
 import { part, drawPart, lg, rg, rr, rivetRow, vents, seams, hazard, windows } from './art.js';
 
-const HULL = ['#8c8478', '#4a453e', '#24211d'];
+const HULL = ['#73788b', '#3c3f4b', '#24211d'];
 
 function plate(c, pts, light, dark) {
   const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
@@ -13,7 +13,7 @@ function greebles(c, x0, y0, x1, y1, n, seed) {
   c.save(); c.globalCompositeOperation = 'source-atop';
   for (let k = 0; k < n; k++) {
     const x = x0 + rnd() * (x1 - x0), y = y0 + rnd() * (y1 - y0), w = 2 + rnd() * 7, h = 1.5 + rnd() * 5;
-    c.fillStyle = rnd() < 0.5 ? 'rgba(0,0,0,0.28)' : 'rgba(255,240,215,0.14)'; c.fillRect(x, y, w, h);
+    c.fillStyle = rnd() < 0.5 ? 'rgba(0,0,0,0.28)' : 'rgba(209,218,249,0.14)'; c.fillRect(x, y, w, h);
   }
   c.restore();
 }
@@ -21,9 +21,9 @@ function greebles(c, x0, y0, x1, y1, n, seed) {
 const SHIPS = {
   // Legionsträger: langer, keilförmiger Rumpf, schwarz mit Karmesin
   legion(c, color) {
-    plate(c, [[130, 0], [40, -46], [-110, -58], [-135, -30], [-135, 30], [-110, 58], [40, 46]], '#3a3230', '#120f0e');
-    plate(c, [[118, 0], [36, -34], [-100, -42], [-100, 0]], '#5a4a46', '#2a2220');
-    plate(c, [[118, 0], [36, 34], [-100, 42], [-100, 0]], '#2e2624', '#141010');
+    plate(c, [[130, 0], [40, -46], [-110, -58], [-135, -30], [-135, 30], [-110, 58], [40, 46]], '#2d2f39', '#120f0e');
+    plate(c, [[118, 0], [36, -34], [-100, -42], [-100, 0]], '#444753', '#1f2129');
+    plate(c, [[118, 0], [36, 34], [-100, 42], [-100, 0]], '#23242d', '#141010');
     c.fillStyle = '#6a1a16'; c.beginPath(); c.moveTo(120, 0); c.lineTo(30, -8); c.lineTo(-120, -8); c.lineTo(-120, 8); c.lineTo(30, 8); c.closePath(); c.fill();
     c.strokeStyle = 'rgba(201,162,74,0.8)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(118, 0); c.lineTo(30, -9); c.lineTo(-120, -9); c.moveTo(118, 0); c.lineTo(30, 9); c.lineTo(-120, 9); c.stroke();
     for (const sy of [-1, 1]) {
@@ -32,13 +32,13 @@ const SHIPS = {
     }
     greebles(c, -125, -50, 100, 50, 140, 7);
     seams(c, [[-40, -50, -40, 50], [10, -44, 10, 44], [60, -36, 60, 36]]);
-    for (const sy of [-1, 0, 1]) { c.fillStyle = '#1a1414'; c.beginPath(); c.arc(-136, sy * 26, 11, 0, 6.28); c.fill(); c.fillStyle = '#3a2a24'; c.beginPath(); c.arc(-136, sy * 26, 7, 0, 6.28); c.fill(); }
+    for (const sy of [-1, 0, 1]) { c.fillStyle = '#1a1414'; c.beginPath(); c.arc(-136, sy * 26, 11, 0, 6.28); c.fill(); c.fillStyle = '#282a33'; c.beginPath(); c.arc(-136, sy * 26, 7, 0, 6.28); c.fill(); }
     c.fillStyle = color; c.fillRect(-70, -4, 30, 8);
   },
   // Flottenträger: breiter, flacher Träger mit Hangarbuchten an beiden Seiten
   flotte(c, color) {
     plate(c, [[120, -20], [120, 20], [70, 62], [-110, 62], [-130, 40], [-130, -40], [-110, -62], [70, -62]], HULL[0], HULL[2]);
-    plate(c, [[110, -14], [110, 14], [-120, 14], [-120, -14]], '#a49a8a', '#5a544a');
+    plate(c, [[110, -14], [110, 14], [-120, 14], [-120, -14]], '#868ca1', '#494c5a');
     for (const sy of [-1, 1]) for (let k = 0; k < 4; k++) {
       const x = -95 + k * 44, y = sy > 0 ? 22 : -54;
       c.fillStyle = '#121110'; rr(c, x, y, 34, 32, 3); c.fill();
@@ -54,11 +54,11 @@ const SHIPS = {
   // Schwerlastträger: wuchtiger Block, vorne keilförmig eingekerbt, gestufte Flanken
   lander(c, color) {
     const outline = [[-120, -70], [100, -70], [100, -18], [62, 0], [100, 18], [100, 70], [-120, 70]];
-    plate(c, outline, '#a8a08e', '#4a463e');
-    plate(c, [[-112, -60], [88, -60], [88, -20], [54, -4], [54, 4], [88, 20], [88, 60], [-112, 60]], '#bcb4a2', '#6e6858');
-    plate(c, [[-100, -44], [70, -44], [44, -4], [44, 4], [70, 44], [-100, 44]], '#9a927f', '#5a554a');
+    plate(c, outline, '#8b91a6', '#3d3f4b');
+    plate(c, [[-112, -60], [88, -60], [88, -20], [54, -4], [54, 4], [88, 20], [88, 60], [-112, 60]], '#9ca3bb', '#5a5e6d');
+    plate(c, [[-100, -44], [70, -44], [44, -4], [44, 4], [70, 44], [-100, 44]], '#7f8498', '#4a4d5a');
     // Fugen und Panelreihen
-    c.strokeStyle = 'rgba(30,26,20,0.55)'; c.lineWidth = 0.9;
+    c.strokeStyle = 'rgba(23,24,31,0.55)'; c.lineWidth = 0.9;
     for (let x = -96; x < 70; x += 18) { c.beginPath(); c.moveTo(x, -44); c.lineTo(x, 44); c.stroke(); }
     for (const y of [-26, 0, 26]) { c.beginPath(); c.moveTo(-100, y); c.lineTo(60, y); c.stroke(); }
     for (const sy of [-1, 1]) { c.fillStyle = 'rgba(20,18,15,0.6)'; c.fillRect(-118, sy * 62 - 4, 210, 8); rivetRow(c, -112, sy * 66, 90, sy * 66, 30, 0.9); }
@@ -70,12 +70,12 @@ const SHIPS = {
   // Eiförmiges Landeschiff (dunkel, glatt, kaum Details)
   egg(c, color) {
     const g = c.createRadialGradient(-30, -24, 8, 0, 0, 110);
-    g.addColorStop(0, '#5a5650'); g.addColorStop(0.55, '#2c2a27'); g.addColorStop(1, '#0e0d0c');
+    g.addColorStop(0, '#4b4e5c'); g.addColorStop(0.55, '#2c2a27'); g.addColorStop(1, '#0e0d0c');
     c.fillStyle = g; c.beginPath(); c.ellipse(0, 0, 100, 66, 0, 0, 6.28); c.fill();
     c.strokeStyle = 'rgba(0,0,0,0.45)'; c.lineWidth = 1;
     for (const k of [0.55, 0.8]) { c.beginPath(); c.ellipse(0, 0, 100 * k, 66 * k, 0, 0, 6.28); c.stroke(); }
     c.beginPath(); c.moveTo(-100, 0); c.lineTo(100, 0); c.stroke();
-    c.strokeStyle = 'rgba(255,240,220,0.12)'; c.lineWidth = 2; c.beginPath(); c.ellipse(-4, -4, 94, 60, 0, 3.4, 5.2); c.stroke();
+    c.strokeStyle = 'rgba(210,218,249,0.12)'; c.lineWidth = 2; c.beginPath(); c.ellipse(-4, -4, 94, 60, 0, 3.4, 5.2); c.stroke();
     for (let i = 0; i < 12; i++) { const a = i / 12 * 6.28; c.fillStyle = 'rgba(255,150,90,0.55)'; c.beginPath(); c.arc(Math.cos(a) * 90, Math.sin(a) * 58, 1.6, 0, 6.28); c.fill(); }
     c.fillStyle = color; c.beginPath(); c.ellipse(0, 0, 10, 6, 0, 0, 6.28); c.fill();
   },
@@ -98,11 +98,11 @@ export function drawGuildRing(ctx, s, t) {
   // Ringkörper
   ctx.translate(s.x, s.y - s.z); ctx.rotate(s.rot);
   const g = ctx.createLinearGradient(-Ro, -Ro, Ro, Ro);
-  g.addColorStop(0, '#8a7c6a'); g.addColorStop(0.5, '#4a4239'); g.addColorStop(1, '#1c1814');
+  g.addColorStop(0, '#6d7284'); g.addColorStop(0.5, '#3a3d48'); g.addColorStop(1, '#1c1814');
   ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, Ro, Ro * 0.62, 0, 0, 6.28); ctx.ellipse(0, 0, Ri, Ri * 0.62, 0, 6.28, 0, true); ctx.fill();
   // Innenwand (Tiefe) und Rand-Licht
   ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(0, 0, Ri, Ri * 0.62, 0, 0, 6.28); ctx.ellipse(0, Ro * 0.06, Ri * 0.98, Ri * 0.6, 0, 6.28, 0, true); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,225,185,0.35)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, Ro, Ro * 0.62, 0, 3.3, 5.3); ctx.stroke();
+  ctx.strokeStyle = 'rgba(199,207,236,0.35)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, Ro, Ro * 0.62, 0, 3.3, 5.3); ctx.stroke();
   ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1.5;
   for (let i = 0; i < 48; i++) { const a = i / 48 * 6.28; ctx.beginPath(); ctx.moveTo(Math.cos(a) * Ri, Math.sin(a) * Ri * 0.62); ctx.lineTo(Math.cos(a) * Ro, Math.sin(a) * Ro * 0.62); ctx.stroke(); }
   ctx.restore();
@@ -120,9 +120,9 @@ export function drawMothership(ctx, s, t) {
     if (b.a <= 0) continue;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     const g = ctx.createLinearGradient(s.x, s.y - z, b.x, b.y);
-    g.addColorStop(0, `rgba(255,220,160,${0.45 * b.a})`); g.addColorStop(1, `rgba(255,200,130,${0.15 * b.a})`);
+    g.addColorStop(0, `rgba(194,202,231,${0.45 * b.a})`); g.addColorStop(1, `rgba(181,188,215,${0.15 * b.a})`);
     ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(s.x - 6, s.y - z); ctx.lineTo(b.x - 14, b.y); ctx.lineTo(b.x + 14, b.y); ctx.lineTo(s.x + 6, s.y - z); ctx.closePath(); ctx.fill();
-    const gg = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 22); gg.addColorStop(0, `rgba(255,230,180,${0.5 * b.a})`); gg.addColorStop(1, 'rgba(255,200,130,0)');
+    const gg = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 22); gg.addColorStop(0, `rgba(201,209,239,${0.5 * b.a})`); gg.addColorStop(1, 'rgba(181,188,215,0)');
     ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(b.x, b.y, 22, 0, 6.28); ctx.fill();
     ctx.restore();
   }
@@ -134,7 +134,7 @@ export function drawMothership(ctx, s, t) {
   const fl = 0.8 + 0.2 * Math.sin(t * 30);
   for (const [x, y] of ENGINES[s.kind]) {
     const g = ctx.createRadialGradient(x, y, 0, x, y, 26 * fl * (s.thrust ?? 1));
-    g.addColorStop(0, 'rgba(255,245,220,0.95)'); g.addColorStop(0.35, 'rgba(255,170,90,0.6)'); g.addColorStop(1, 'rgba(255,100,40,0)');
+    g.addColorStop(0, 'rgba(212,221,252,0.95)'); g.addColorStop(0.35, 'rgba(255,170,90,0.6)'); g.addColorStop(1, 'rgba(255,100,40,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 26 * fl * (s.thrust ?? 1), 0, 6.28); ctx.fill();
   }
   const blink = (t * 1.2) % 1 < 0.15;

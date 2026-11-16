@@ -79,7 +79,7 @@ export class Controller {
       if (u.def.mt !== 'air' && u.def.cat === 'veh' && sand(path[i + 1]) && Math.random() < 0.5) this.fx.dust(u.vis.x - Math.cos(u.facing) * 12, u.vis.y - Math.sin(u.facing) * 12, 1, '205,160,100', 6, 4);
       if (u.def.mt !== 'air' && u.def.cat === 'veh') { const lt = u._lt; if (!lt || Math.hypot(u.vis.x - lt.x, u.vis.y - lt.y) > 7) { this.fx.track(u.vis.x, u.vis.y, u.facing, u.type === 'trike' ? 8 : u.type === 'ernter' ? 15 : 11); u._lt = { ...u.vis }; } }
       if (u.def.mt === 'air' && sand(path[i + 1]) && Math.random() < 0.15) this.fx.dust(u.vis.x, u.vis.y, 1, '210,170,110', 14, 5);
-      if (u.def.cat === 'inf' && Math.random() < 0.08) this.fx.dust(u.vis.x, u.vis.y + 4, 1, '190,150,100', 8, 2);
+      if (u.def.cat === 'inf' && Math.random() < 0.08) this.fx.dust(u.vis.x, u.vis.y + 4, 1, '110,108,118', 8, 2);
       const c = u.carrying && this.g.get(u.carrying); if (c) c.vis = u.vis;
     });
     u.vis = null; u.anim = false;
@@ -101,7 +101,7 @@ export class Controller {
           fx.tracer(sx, sy, tx + jx, ty + jy, team); fx.muzzle(sx, sy, ang, 0.6); if (Math.random() < 0.5) fx.casing(sx, sy, ang);
           if (Math.random() < 0.6) fx.spark(tx + jx, ty + jy, 2, '255,230,170', 60);
         }
-      }).then(() => fx.dust(tx, ty, 3, '170,150,120', 10, 4));
+      }).then(() => fx.dust(tx, ty, 3, '110,110,120', 10, 4));
     }
     if (proj === 'flak') {
       return this.tween(0.5, (k, dt) => {
@@ -150,7 +150,7 @@ export class Controller {
     const d = Math.hypot(tx - sx, ty - sy);
     const dur = proj === 'arty' ? 0.75 : proj === 'rocket' ? 0.18 + d / 420 : 0.1 + d / 650;
     fx.flash(sx, sy, proj === 'shell' ? 16 : 10, '255,200,120', 0.08);
-    if (proj === 'shell') { fx.smoke(sx, sy, 2, 4, 0.9); fx.muzzle(sx, sy, Math.atan2(ty - sy, tx - sx), 1.3); fx.dust(sx, sy + 6, 3, '190,150,100', 16, 5); }
+    if (proj === 'shell') { fx.smoke(sx, sy, 2, 4, 0.9); fx.muzzle(sx, sy, Math.atan2(ty - sy, tx - sx), 1.3); fx.dust(sx, sy + 6, 3, '110,108,118', 16, 5); }
     return this.tween(dur, (k) => {
       const kk = proj === 'rocket' ? k * k : k;
       p.x = sx + (tx - sx) * kk; p.y = sy + (ty - sy) * kk;
@@ -297,7 +297,7 @@ export class Controller {
         } else if (u.def.mt === 'air') { u.z = 0; this.tween(0.8, (k) => { u.z = 26 * k; }); }
       } else if (ev.type === 'built') {
         const b = g.get(ev.b); if (!b || !g.seen(b)) continue;
-        const p = this.r.posOf(b); b.rise = 0; this.fx.dust(p.x, p.y, 14, '170,150,120', 40, 8); this.tween(0.6, (k) => { b.rise = k; });
+        const p = this.r.posOf(b); b.rise = 0; this.fx.dust(p.x, p.y, 14, '110,110,120', 40, 8); this.tween(0.6, (k) => { b.rise = k; });
       } else if (ev.type === 'orbital') await this.animOrbital(ev);
       else if (ev.type === 'endgame') await this.animEndgame(ev);
       else if (ev.type === 'strike') await this.animStrike(ev);
@@ -378,8 +378,8 @@ export class Controller {
         if (w.vis) { const a = Math.atan2(ny - w.vis.y, nx - w.vis.x); if (Math.hypot(nx - w.vis.x, ny - w.vis.y) > 0.3) w.dir = a; }
         w.vis = { x: nx, y: ny };
         fx.shake = Math.max(fx.shake, 0.8 * sc);
-        if (Math.random() < 0.55) fx.dust(w.vis.x - Math.cos(w.dir) * 20 * sc, w.vis.y - Math.sin(w.dir) * 20 * sc, 2, '200,150,95', 26 * sc, 7 * sc);
-        if (Math.random() < 0.3) fx.add({ kind: 'debris', x: w.vis.x + (Math.random() - 0.5) * 30 * sc, y: w.vis.y + (Math.random() - 0.5) * 16 * sc, vx: (Math.random() - 0.5) * 50, vy: (Math.random() - 0.5) * 30, vz: 60 + Math.random() * 90 * sc, life: 0.9, size: 2 + Math.random() * 2, col: '214,168,104', a: 1 });
+        if (Math.random() < 0.55) fx.dust(w.vis.x - Math.cos(w.dir) * 20 * sc, w.vis.y - Math.sin(w.dir) * 20 * sc, 2, '105,105,118', 26 * sc, 7 * sc);
+        if (Math.random() < 0.3) fx.add({ kind: 'debris', x: w.vis.x + (Math.random() - 0.5) * 30 * sc, y: w.vis.y + (Math.random() - 0.5) * 16 * sc, vx: (Math.random() - 0.5) * 50, vy: (Math.random() - 0.5) * 30, vz: 60 + Math.random() * 90 * sc, life: 0.9, size: 2 + Math.random() * 2, col: '92,94,106', a: 1 });
         if (strike) fx.shake = Math.max(fx.shake, 1.5 * sc * k);
       });
     }
@@ -393,7 +393,7 @@ export class Controller {
         w.whirl = k;
         fx.shake = Math.max(fx.shake, 3 * sc);
         for (const v of victims) { const p0 = center(v.c, v.r); v.vis = { x: p0.x + (end.x - p0.x) * k * 0.5 + (Math.random() - 0.5) * 3, y: p0.y + (end.y - p0.y) * k * 0.5 + (Math.random() - 0.5) * 3 }; }
-        for (const hp of hexPts) if (Math.random() < 0.5) fx.dust(hp.x + (Math.random() - 0.5) * 50, hp.y + (Math.random() - 0.5) * 40, 1, '190,140,85', 10, 6);
+        for (const hp of hexPts) if (Math.random() < 0.5) fx.dust(hp.x + (Math.random() - 0.5) * 50, hp.y + (Math.random() - 0.5) * 40, 1, '100,100,112', 10, 6);
       });
       // 3. Ausbruch von unten nach oben: Kopf steigt Richtung Kamera, Schlund klappt auf
       fx.shake = 12 * sc;
@@ -411,7 +411,7 @@ export class Controller {
       // 4. Verharren: Zahnringe mahlen, Sand rieselt in den Schlund
       await this.tween(1.1, (k) => {
         fx.shake = Math.max(fx.shake, 2 * sc);
-        if (Math.random() < 0.8) { const a = Math.random() * 6.28, rr = 46 * sc; fx.add({ kind: 'debris', x: end.x + Math.cos(a) * rr, y: end.y + Math.sin(a) * rr, vx: -Math.cos(a) * 30, vy: -Math.sin(a) * 30, vz: 20, life: 0.7, size: 2 + Math.random() * 2, col: '214,168,104', a: 1 }); }
+        if (Math.random() < 0.8) { const a = Math.random() * 6.28, rr = 46 * sc; fx.add({ kind: 'debris', x: end.x + Math.cos(a) * rr, y: end.y + Math.sin(a) * rr, vx: -Math.cos(a) * 30, vy: -Math.sin(a) * 30, vz: 20, life: 0.7, size: 2 + Math.random() * 2, col: '92,94,106', a: 1 }); }
       });
       // 5. Schlund schließt sich, der Wurm kippt nach vorn und taucht ab; sein Rücken gleitet durch den Sand
       await this.tween(0.35, (k) => { w.open = 1 - k; });
@@ -425,11 +425,11 @@ export class Controller {
           const f = k / 0.45; const h = at(f);
           w.vis = { x: h.x, y: h.y }; w.surface = 1 - f * 0.75; w.body = body(0, f);
           w.dir = dir + Math.cos(f * Math.PI) * 0.4 * Math.sign(bend);
-          if (Math.random() < 0.25) fx.dust(h.x + Math.cos(dir) * 20 * sc, h.y + Math.sin(dir) * 20 * sc, 1, '200,150,95', 18 * sc, 6 * sc);
+          if (Math.random() < 0.25) fx.dust(h.x + Math.cos(dir) * 20 * sc, h.y + Math.sin(dir) * 20 * sc, 1, '105,105,118', 18 * sc, 6 * sc);
         } else {
           const f = (k - 0.45) / 0.55; w.surface = Math.max(0, 0.25 - f * 0.6); w.vis = at(1);
           w.body = body(f, 1);
-          const tail = at(f); if (Math.random() < 0.25) fx.dust(tail.x, tail.y, 1, '200,150,95', 16 * sc, 6 * sc);
+          const tail = at(f); if (Math.random() < 0.25) fx.dust(tail.x, tail.y, 1, '105,105,118', 16 * sc, 6 * sc);
         }
         w.whirl = Math.max(0, 1 - k * 2);
       });
@@ -459,7 +459,7 @@ export class Controller {
         if (Math.random() < 0.9) { this.fx.fire(pd.x + pd.ox * (1 - k) * 0, pd.y - pd.h, 1, 5); this.fx.smoke(pd.x, pd.y - pd.h + 10, 1, 5, 0.6); }
       }
     });
-    for (const pd of pods) { pd.h = 0; this.fx.explosion(pd.x, pd.y, 0.7); this.fx.ring(pd.x, pd.y, 14, '255,220,170', 0.6); this.fx.dust(pd.x, pd.y, 16, '200,160,110', 40, 9); }
+    for (const pd of pods) { pd.h = 0; this.fx.explosion(pd.x, pd.y, 0.7); this.fx.ring(pd.x, pd.y, 14, '255,220,170', 0.6); this.fx.dust(pd.x, pd.y, 16, '108,108,120', 40, 9); }
     this.fx.shake = 7;
     await this.tween(0.4, (k) => { for (const pd of pods) pd.open = k; });
     for (const u of units) { u.hidden = false; this.hitFlash(u); }
@@ -508,17 +508,17 @@ export class Controller {
         const e = 1 - Math.pow(1 - k, 3);
         for (const sh of ships) { sh.x = sh.sx + (sh.tx - sh.sx) * e; sh.y = sh.sy + (sh.ty - sh.sy) * e; sh.z = 360 - (kind === 'egg' ? 300 : 270) * e; }
         this.fx.shake = Math.max(this.fx.shake, 2 + 4 * k);
-        for (const sh of ships) if (Math.random() < 0.35) this.fx.dust(sh.x + (Math.random() - 0.5) * 200, sh.y + (Math.random() - 0.5) * 120, 1, '205,165,112', 40, 9);
+        for (const sh of ships) if (Math.random() < 0.35) this.fx.dust(sh.x + (Math.random() - 0.5) * 200, sh.y + (Math.random() - 0.5) * 120, 1, '112,112,124', 40, 9);
       });
       $('#app').classList.add('quake');
       for (const sh of ships) {
         sh.beams = sh.group.map((u) => { const p = center(u.c, u.r); return { x: p.x, y: p.y, a: 0 }; });
-        if (kind === 'egg') { this.fx.dust(sh.x, sh.y, 30, '205,165,112', 70, 10); this.fx.ring(sh.x, sh.y, 30, '230,200,160', 0.6); }
+        if (kind === 'egg') { this.fx.dust(sh.x, sh.y, 30, '112,112,124', 70, 10); this.fx.ring(sh.x, sh.y, 30, '230,200,160', 0.6); }
       }
       for (const sh of ships) for (let i = 0; i < sh.group.length; i++) {
         const b = sh.beams[i];
         await this.tween(0.3, (k) => { b.a = k; });
-        sh.group[i].hidden = false; this.hitFlash(sh.group[i]); this.fx.dust(b.x, b.y, 12, '205,165,112', 40, 8); this.fx.ring(b.x, b.y, 12, '255,220,170', 0.5);
+        sh.group[i].hidden = false; this.hitFlash(sh.group[i]); this.fx.dust(b.x, b.y, 12, '112,112,124', 40, 8); this.fx.ring(b.x, b.y, 12, '255,220,170', 0.5);
       }
       await this.wait(0.5);
       await this.tween(0.4, (k) => { for (const sh of ships) for (const b of sh.beams) b.a = 1 - k; });
@@ -561,7 +561,7 @@ export class Controller {
     if (ev.card === 'stimme') { fx.ring(p.x, p.y, 12, '210,150,255', 0.8); fx.flash(p.x, p.y, 40, '190,120,255', 0.4); this.r.float(p.x, p.y, 'Gelähmt!', '#d6a8ff', true); }
     else if (ev.card === 'vorahnung') { this.r.fogDirty = true; $('#app').classList.add('vision'); setTimeout(() => $('#app').classList.remove('vision'), 900); }
     else if (ev.card === 'wetter') { fx.ring(p.x, p.y, 20, '255,190,120', 0.8); this.r.float(p.x, p.y, 'Smog umgelenkt', '#ffc080', true); }
-    else if (ev.card === 'klopfer') { fx.dust(p.x, p.y, 10, '200,160,110', 20, 6); this.r.float(p.x, p.y, 'Störsender gesetzt', '#ffd080', true); }
+    else if (ev.card === 'klopfer') { fx.dust(p.x, p.y, 10, '108,108,120', 20, 6); this.r.float(p.x, p.y, 'Störsender gesetzt', '#ffd080', true); }
     else if (ev.card === 'verrat') { const u = g.get(ev.target); fx.spark(p.x, p.y, 20, '210,160,255', 90); if (u) this.hitFlash(u); this.r.float(p.x, p.y, 'Übergelaufen!', '#d6a8ff', true); }
     else if (ev.card === 'schild') { fx.ring(p.x, p.y, 14, '140,210,255', 0.8); this.r.float(p.x, p.y, 'Schildwall', '#9fdcff', true); }
     else if (ev.card === 'sabotage') { for (let k = 0; k < 6; k++) setTimeout(() => { fx.spark(p.x + (Math.random() - 0.5) * 30, p.y + (Math.random() - 0.5) * 30, 6, '255,200,120', 80); fx.smoke(p.x, p.y, 2, 6, 0.9); }, k * 90); this.r.float(p.x, p.y, 'Sabotiert!', '#ffb070', true); }
@@ -622,7 +622,7 @@ export class Controller {
       const a = this.r.posOf(u), b = center(c, r);
       this.ensureVisible(b.x, b.y);
       for (let k = 0; k < 5; k++) { this.fx.ring(a.x, a.y, 6 + k * 3, '220,190,140', 0.5); await this.wait(0.12); this.fx.shake = 2; }
-      this.fx.dust(b.x, b.y, 12, '200,150,95', 30, 8);
+      this.fx.dust(b.x, b.y, 12, '105,105,118', 30, 8);
       this.r.float(b.x, b.y - 10, 'Der Ruf ist geschlagen', '#ffd080', true);
       await this.wait(0.3);
     }
@@ -634,8 +634,8 @@ export class Controller {
     if (u.owner === 0 || g.visible[g.i(c, r)]) {
       const a = this.r.posOf(u), b = center(c, r);
       this.ensureVisible(b.x, b.y);
-      await this.tween(0.5, (k) => { if (Math.random() < 0.5) this.fx.dust(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k, 1, '200,160,110', 8, 4); });
-      this.fx.dust(b.x, b.y, 10, '200,160,110', 20, 6); this.fx.ring(b.x, b.y, 8, '255,210,140', 0.6);
+      await this.tween(0.5, (k) => { if (Math.random() < 0.5) this.fx.dust(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k, 1, '108,108,120', 8, 4); });
+      this.fx.dust(b.x, b.y, 10, '108,108,120', 20, 6); this.fx.ring(b.x, b.y, 8, '255,210,140', 0.6);
       this.r.float(b.x, b.y - 10, 'Störsender!', '#ffd080', true);
       await this.wait(0.3);
     }
@@ -683,14 +683,14 @@ export class Controller {
     car.vis = { x, y };
     await this.tween(0.55, (k) => {
       car.z = z0 - (z0 - 5) * (k * k * (3 - 2 * k));
-      if (Math.random() < 0.6 + k * 0.4) fx.dust(x + (Math.random() - 0.5) * 30, y + (Math.random() - 0.5) * 20, 1, '205,165,112', 30 * k + 10, 7);
+      if (Math.random() < 0.6 + k * 0.4) fx.dust(x + (Math.random() - 0.5) * 30, y + (Math.random() - 0.5) * 20, 1, '112,112,124', 30 * k + 10, 7);
     });
-    fx.dust(x, y, 10, '205,165,112', 40, 8);
+    fx.dust(x, y, 10, '112,112,124', 40, 8);
     if (onGround) onGround();
     await this.wait(0.25);
     await this.tween(0.55, (k) => {
       car.z = 5 + (z0 - 5) * (k * k * (3 - 2 * k));
-      if (Math.random() < 0.6 * (1 - k)) fx.dust(x + (Math.random() - 0.5) * 30, y + (Math.random() - 0.5) * 20, 1, '205,165,112', 26, 7);
+      if (Math.random() < 0.6 * (1 - k)) fx.dust(x + (Math.random() - 0.5) * 30, y + (Math.random() - 0.5) * 20, 1, '112,112,124', 26, 7);
     });
     if (Math.hypot(x - home.x, y - home.y) > 2) await this.tween(0.45, (k) => { const e = k * k * (3 - 2 * k); car.vis = { x: x + (home.x - x) * e, y: y + (home.y - y) * e }; });
     car.vis = null; car.z = undefined;
@@ -699,11 +699,11 @@ export class Controller {
   async animLand(u, down) {
     const g = this.g, p = center(u.c, u.r), fx = this.fx;
     if (down) {
-      await this.tween(0.8, (k) => { u.z = 26 - 23 * (k * k * (3 - 2 * k)); if (Math.random() < 0.8) fx.dust(p.x + (Math.random() - 0.5) * 34, p.y + (Math.random() - 0.5) * 24, 1, '205,165,112', 20 + k * 20, 7); });
-      g.land(u); u.z = undefined; fx.dust(p.x, p.y, 14, '205,165,112', 36, 8);
+      await this.tween(0.8, (k) => { u.z = 26 - 23 * (k * k * (3 - 2 * k)); if (Math.random() < 0.8) fx.dust(p.x + (Math.random() - 0.5) * 34, p.y + (Math.random() - 0.5) * 24, 1, '112,112,124', 20 + k * 20, 7); });
+      g.land(u); u.z = undefined; fx.dust(p.x, p.y, 14, '112,112,124', 36, 8);
     } else {
       g.takeoff(u); u.z = 3;
-      await this.tween(0.8, (k) => { u.z = 3 + 23 * (k * k * (3 - 2 * k)); if (Math.random() < 0.8 * (1 - k)) fx.dust(p.x + (Math.random() - 0.5) * 34, p.y + (Math.random() - 0.5) * 24, 1, '205,165,112', 30, 7); });
+      await this.tween(0.8, (k) => { u.z = 3 + 23 * (k * k * (3 - 2 * k)); if (Math.random() < 0.8 * (1 - k)) fx.dust(p.x + (Math.random() - 0.5) * 34, p.y + (Math.random() - 0.5) * 24, 1, '112,112,124', 30, 7); });
       u.z = undefined;
     }
     if (u.owner === 0) { g.updateVision(); this.r.fogDirty = true; }
@@ -788,7 +788,7 @@ export class Controller {
     if (this.mode === 'build') {
       if (this.r.hl.build.some(([bc, br]) => bc === c && br === r)) {
         const nb = g.placeBuilding(0, this.buildType, c, r);
-        if (nb) { const p = center(c, r); this.fx.dust(p.x, p.y, 16, '170,150,120', 40, 8); this.fx.ring(p.x, p.y, 10, '140,255,160', 0.5); }
+        if (nb) { const p = center(c, r); this.fx.dust(p.x, p.y, 16, '110,110,120', 40, 8); this.fx.ring(p.x, p.y, 10, '140,255,160', 0.5); }
         this.deselect(); this.refresh(); return;
       }
       this.deselect(); return;
@@ -1441,14 +1441,14 @@ export class Controller {
     for (let r = 0; r < g.H; r++) for (let c = 0; c < g.W; c++) {
       const i = g.i(c, r), p = center(c, r);
       if (!g.explored[i]) { ctx.fillStyle = 'rgba(6,4,8,0.95)'; ctx.fillRect((p.x - R) * sx, (p.y - R) * sy, R * 2 * sx + 1, R * 2 * sy + 1); continue; }
-      if (g.spiceAt(c, r) > 0) { ctx.fillStyle = 'rgba(220,100,40,0.8)'; ctx.fillRect((p.x - 10) * sx, (p.y - 10) * sy, 20 * sx + 1, 20 * sy + 1); }
+      if (g.spiceAt(c, r) > 0) { ctx.fillStyle = 'rgba(70,220,255,0.75)'; ctx.fillRect((p.x - 10) * sx, (p.y - 10) * sy, 20 * sx + 1, 20 * sy + 1); }
       if (!g.visible[i]) { ctx.fillStyle = 'rgba(6,4,8,0.4)'; ctx.fillRect((p.x - R) * sx, (p.y - R) * sy, R * 2 * sx + 1, R * 2 * sy + 1); }
     }
     for (const b of g.buildings) if (g.seen(b)) { const p = center(b.c, b.r); ctx.fillStyle = g.players[b.owner].color; ctx.fillRect(p.x * sx - 3, p.y * sy - 3, 6, 6); }
     for (const u of g.units) if (!u.carried && g.seen(u)) { const p = center(u.c, u.r); ctx.fillStyle = g.players[u.owner].color; ctx.beginPath(); ctx.arc(p.x * sx, p.y * sy, 2, 0, 6.28); ctx.fill(); }
     for (const po of g.pois || []) { const p = center(po.c, po.r); ctx.save(); ctx.translate(p.x * sx, p.y * sy); ctx.rotate(0.785); ctx.fillStyle = po.owner >= 0 ? g.players[po.owner].color : '#e8dcc4'; ctx.strokeStyle = '#111'; ctx.lineWidth = 1; ctx.fillRect(-3.5, -3.5, 7, 7); ctx.strokeRect(-3.5, -3.5, 7, 7); ctx.restore(); }
-    for (const w of g.worms) if (g.wormSeen(w)) { const p = center(w.c, w.r); ctx.strokeStyle = '#ffcc66'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(p.x * sx, p.y * sy, 3.5, 0, 6.28); ctx.stroke(); }
-    const s = g.storm; if (s) { const p = center(s.c, s.r); ctx.fillStyle = 'rgba(200,130,60,0.45)'; ctx.beginPath(); ctx.arc(p.x * sx, p.y * sy, (s.rad + 0.5) * 66 * sx, 0, 6.28); ctx.fill(); }
+    for (const w of g.worms) if (g.wormSeen(w)) { const p = center(w.c, w.r); ctx.strokeStyle = '#ff2846'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(p.x * sx, p.y * sy, 3.5, 0, 6.28); ctx.stroke(); }
+    const s = g.storm; if (s) { const p = center(s.c, s.r); ctx.fillStyle = 'rgba(150,200,60,0.45)'; ctx.beginPath(); ctx.arc(p.x * sx, p.y * sy, (s.rad + 0.5) * 66 * sx, 0, 6.28); ctx.fill(); }
     const cam = this.r.cam;
     ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1;
     ctx.strokeRect(cam.x * sx, cam.y * sy, this.r.vw / cam.z * sx, this.r.vh / cam.z * sy);

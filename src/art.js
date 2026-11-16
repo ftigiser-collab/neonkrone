@@ -52,13 +52,13 @@ function material(cv, o, SC = SCALE) {
   if (o.dust) {
     ctx.globalAlpha = o.dust;
     const g = ctx.createLinearGradient(0, 0, w * 0.4, h);
-    g.addColorStop(0, 'rgba(210,170,110,0)'); g.addColorStop(1, 'rgba(210,170,110,1)');
+    g.addColorStop(0, 'rgba(152,158,182,0)'); g.addColorStop(1, 'rgba(152,158,182,1)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
   }
   if (b > 0) {
-    ctx.globalAlpha = o.light ?? 0.5; ctx.drawImage(edgeBand(sil, b, b, 'rgb(255,246,226)'), 0, 0);
+    ctx.globalAlpha = o.light ?? 0.5; ctx.drawImage(edgeBand(sil, b, b, 'rgb(213,222,253)'), 0, 0);
     ctx.globalAlpha = o.shade ?? 0.55; ctx.drawImage(edgeBand(sil, -b, -b, 'rgb(10,6,2)'), 0, 0);
-    if (o.rim !== false) { ctx.globalAlpha = 0.22; ctx.drawImage(edgeBand(sil, b * 2.2, b * 2.2, 'rgb(255,240,210)'), 0, 0); }
+    if (o.rim !== false) { ctx.globalAlpha = 0.22; ctx.drawImage(edgeBand(sil, b * 2.2, b * 2.2, 'rgb(209,217,248)'), 0, 0); }
   }
   ctx.restore();
 }
@@ -94,12 +94,12 @@ export function lg(ctx, x0, y0, x1, y1, ...stops) { const g = ctx.createLinearGr
 export function rg(ctx, x, y, r0, r1, ...stops) { const g = ctx.createRadialGradient(x, y, r0, x, y, r1); stops.forEach((c, i) => g.addColorStop(i / (stops.length - 1), c)); return g; }
 export function box(ctx, x, y, w, h, fill, r = 1.5) { ctx.fillStyle = fill; rr(ctx, x, y, w, h, r); ctx.fill(); }
 export function rivets(ctx, pts, r = 0.45, col = 'rgba(30,22,15,0.75)') {
-  for (const [x, y] of pts) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fill(); ctx.fillStyle = 'rgba(255,240,215,0.45)'; ctx.beginPath(); ctx.arc(x - r * 0.35, y - r * 0.35, r * 0.4, 0, 6.28); ctx.fill(); }
+  for (const [x, y] of pts) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fill(); ctx.fillStyle = 'rgba(209,218,249,0.45)'; ctx.beginPath(); ctx.arc(x - r * 0.35, y - r * 0.35, r * 0.4, 0, 6.28); ctx.fill(); }
 }
 export function rivetRow(ctx, x0, y0, x1, y1, n, r) { const pts = []; for (let i = 0; i < n; i++) pts.push([x0 + (x1 - x0) * i / (n - 1), y0 + (y1 - y0) * i / (n - 1)]); rivets(ctx, pts, r); }
 export function vents(ctx, x, y, w, h, n, vertical = false) {
-  box(ctx, x, y, w, h, '#2a241e', 0.6);
-  ctx.strokeStyle = 'rgba(150,135,110,0.55)'; ctx.lineWidth = 0.4;
+  box(ctx, x, y, w, h, '#20212a', 0.6);
+  ctx.strokeStyle = 'rgba(118,123,142,0.55)'; ctx.lineWidth = 0.4;
   for (let i = 1; i < n; i++) { ctx.beginPath(); if (vertical) { const xx = x + w * i / n; ctx.moveTo(xx, y + 0.4); ctx.lineTo(xx, y + h - 0.4); } else { const yy = y + h * i / n; ctx.moveTo(x + 0.4, yy); ctx.lineTo(x + w - 0.4, yy); } ctx.stroke(); }
 }
 export function seams(ctx, lines, col = 'rgba(25,18,12,0.45)', w = 0.45) {
@@ -109,18 +109,18 @@ export function seams(ctx, lines, col = 'rgba(25,18,12,0.45)', w = 0.45) {
 export function hazard(ctx, x, y, w, h) {
   ctx.save(); rr(ctx, x, y, w, h, 0.5); ctx.clip();
   ctx.fillStyle = '#e2b13c'; ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = '#211a14'; for (let k = -h; k < w + h; k += 3) { ctx.beginPath(); ctx.moveTo(x + k, y + h); ctx.lineTo(x + k + 1.5, y + h); ctx.lineTo(x + k + 1.5 + h, y); ctx.lineTo(x + k + h, y); ctx.closePath(); ctx.fill(); }
+  ctx.fillStyle = '#181920'; for (let k = -h; k < w + h; k += 3) { ctx.beginPath(); ctx.moveTo(x + k, y + h); ctx.lineTo(x + k + 1.5, y + h); ctx.lineTo(x + k + 1.5 + h, y); ctx.lineTo(x + k + h, y); ctx.closePath(); ctx.fill(); }
   ctx.restore();
 }
-export function pipe(ctx, pts, w, col = '#7d7468') {
+export function pipe(ctx, pts, w, col = '#666a7b') {
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  for (const [lw, c] of [[w, '#2a241e'], [w * 0.75, col], [w * 0.25, 'rgba(255,240,215,0.5)']]) {
+  for (const [lw, c] of [[w, '#20212a'], [w * 0.75, col], [w * 0.25, 'rgba(209,218,249,0.5)']]) {
     ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (const p of pts.slice(1)) ctx.lineTo(p[0], p[1]); ctx.stroke();
   }
 }
 export function windows(ctx, x, y, w, h, n, col = 'rgba(255,196,120,0.85)') {
   const gw = w / n;
-  for (let i = 0; i < n; i++) { box(ctx, x + i * gw + 0.3, y, gw - 0.6, h, '#1e1914', 0.3); ctx.fillStyle = col; ctx.fillRect(x + i * gw + 0.6, y + 0.3, gw - 1.2, h - 0.6); }
+  for (let i = 0; i < n; i++) { box(ctx, x + i * gw + 0.3, y, gw - 0.6, h, '#16171e', 0.3); ctx.fillStyle = col; ctx.fillRect(x + i * gw + 0.6, y + 0.3, gw - 1.2, h - 0.6); }
 }
 export function dome(ctx, x, y, r, base, dark) {
   ctx.fillStyle = rg(ctx, x - r * 0.4, y - r * 0.4, r * 0.1, r * 1.05, base, dark);
@@ -135,7 +135,7 @@ export function hexPath(ctx, x, y, r) {
   ctx.closePath();
 }
 export function emblem(ctx, x, y, r, color) {
-  ctx.fillStyle = '#1e1914'; ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#16171e'; ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); ctx.fill();
   ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x, y - r * 0.7); ctx.lineTo(x + r * 0.7, y); ctx.lineTo(x, y + r * 0.7); ctx.lineTo(x - r * 0.7, y); ctx.closePath(); ctx.fill();
   ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.moveTo(x, y - r * 0.7); ctx.lineTo(x + r * 0.7, y); ctx.lineTo(x, y); ctx.closePath(); ctx.fill();
 }

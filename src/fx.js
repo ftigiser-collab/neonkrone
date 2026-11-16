@@ -38,7 +38,7 @@ export function tintedBlob(col, i) {
 const FLAMES = [];
 function flame(stage) {
   if (!FLAMES.length) {
-    const cols = [['255,250,225', '255,200,90'], ['255,200,90', '240,110,30'], ['230,100,30', '140,40,15']];
+    const cols = [['215,224,255', '255,200,90'], ['255,200,90', '240,110,30'], ['230,100,30', '140,40,15']];
     for (const [a, b] of cols) {
       const cv = mk(64), c = cv.getContext('2d');
       for (let i = 0; i < 14; i++) {
@@ -81,7 +81,7 @@ export class FX {
     this.p.push(o);
   }
 
-  dust(x, y, n = 1, col = '196,150,96', spread = 6, size = 5) {
+  dust(x, y, n = 1, col = '110,110,120', spread = 6, size = 5) {
     for (let i = 0; i < n; i++) this.add({ kind: 'puff', x: x + (R() - 0.5) * spread, y: y + (R() - 0.5) * spread, vx: (R() - 0.5) * 14, vy: (R() - 0.5) * 14 - 4, life: 0.9 + R() * 0.8, size: size + R() * 3, grow: 14, col, a: 0.35 });
   }
   smoke(x, y, n = 1, size = 6, dark = 0.5) {
@@ -93,7 +93,7 @@ export class FX {
   fire(x, y, n = 1, size = 5) {
     for (let i = 0; i < n; i++) this.add({ kind: 'flame', x: x + (R() - 0.5) * 8, y: y + (R() - 0.5) * 8, vx: (R() - 0.5) * 20, vy: -10 - R() * 20, life: 0.35 + R() * 0.45, size: size + R() * 4, grow: 6, a: 0.95 });
   }
-  spark(x, y, n = 4, col = '255,220,140', speed = 120) {
+  spark(x, y, n = 4, col = '192,200,228', speed = 120) {
     for (let i = 0; i < n; i++) {
       const a = R() * Math.PI * 2, s = speed * (0.4 + R());
       this.add({ kind: 'spark', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 0.2 + R() * 0.3, size: 1.5, col, a: 1 });
@@ -102,22 +102,22 @@ export class FX {
   flash(x, y, size = 20, col = '255,200,120', life = 0.12) {
     this.add({ kind: 'glow', x, y, life, size, grow: size * 2, col, a: 1 });
   }
-  ring(x, y, size = 10, col = '255,230,190', life = 0.4) {
+  ring(x, y, size = 10, col = '202,210,240', life = 0.4) {
     this.add({ kind: 'ring', x, y, life, size, grow: size * 6, col, a: 0.7 });
   }
   muzzle(x, y, ang, size = 1) {
     // gerichteter Mündungsblitz mit Strahlen
-    this.add({ kind: 'glow', x: x + Math.cos(ang) * 4 * size, y: y + Math.sin(ang) * 4 * size, life: 0.07, size: 9 * size, grow: 30, col: '255,220,150', a: 1 });
-    for (let k = -1; k <= 1; k++) { const a = ang + k * 0.35; this.add({ kind: 'line', x, y, x2: x + Math.cos(a) * 14 * size * (k ? 0.6 : 1), y2: y + Math.sin(a) * 14 * size * (k ? 0.6 : 1), life: 0.06, col: '255,235,180', a: 1 }); }
+    this.add({ kind: 'glow', x: x + Math.cos(ang) * 4 * size, y: y + Math.sin(ang) * 4 * size, life: 0.07, size: 9 * size, grow: 30, col: '193,201,229', a: 1 });
+    for (let k = -1; k <= 1; k++) { const a = ang + k * 0.35; this.add({ kind: 'line', x, y, x2: x + Math.cos(a) * 14 * size * (k ? 0.6 : 1), y2: y + Math.sin(a) * 14 * size * (k ? 0.6 : 1), life: 0.06, col: '203,212,242', a: 1 }); }
   }
   casing(x, y, ang) {
     const a = ang + Math.PI / 2 + (Math.random() - 0.5) * 0.6;
     this.add({ kind: 'debris', x, y, vx: Math.cos(a) * 40, vy: Math.sin(a) * 40, vz: 50 + Math.random() * 30, life: 0.7, size: 1.3, col: '220,180,90', a: 1 });
   }
-  tracer(x1, y1, x2, y2, col = '255,230,150') {
+  tracer(x1, y1, x2, y2, col = '198,206,235') {
     this.add({ kind: 'line', x: x1, y: y1, x2, y2, life: 0.07, col, a: 0.9 });
   }
-  debris(x, y, n = 6, col = '60,50,40') {
+  debris(x, y, n = 6, col = '45,47,57') {
     for (let i = 0; i < n; i++) {
       const a = R() * Math.PI * 2, s = 40 + R() * 90;
       this.add({ kind: 'debris', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, vz: 60 + R() * 120, life: 0.8 + R() * 0.6, size: 1.5 + R() * 2.5, col, a: 1 });
@@ -126,16 +126,16 @@ export class FX {
   sandBurst(x, y, n = 30, radius = 30, dustN = 18) {
     for (let i = 0; i < n; i++) {
       const a = R() * Math.PI * 2, s = 30 + R() * 110;
-      this.add({ kind: 'debris', x: x + Math.cos(a) * radius * R(), y: y + Math.sin(a) * radius * R(), vx: Math.cos(a) * s, vy: Math.sin(a) * s, vz: 80 + R() * 200, life: 0.9 + R() * 0.8, size: 2 + R() * 3, col: '214,168,104', a: 1 });
+      this.add({ kind: 'debris', x: x + Math.cos(a) * radius * R(), y: y + Math.sin(a) * radius * R(), vx: Math.cos(a) * s, vy: Math.sin(a) * s, vz: 80 + R() * 200, life: 0.9 + R() * 0.8, size: 2 + R() * 3, col: '92,94,106', a: 1 });
     }
-    this.dust(x, y, dustN, '206,160,100', radius * 1.6, 12);
+    this.dust(x, y, dustN, '110,110,122', radius * 1.6, 12);
   }
 
   explosion(x, y, size = 1) {
     // Bodenlicht, Blitz, Feuerball aus Flammenballen, Druckwelle, Staubring, Trümmer mit Rauchspur, Glut
     this.add({ kind: 'glow', x, y, life: 0.45, size: 70 * size, grow: 30, col: '255,150,60', a: 0.55 });
-    this.flash(x, y, 24 * size, '255,245,220', 0.12);
-    this.ring(x, y, 8 * size, '255,235,200', 0.3);
+    this.flash(x, y, 24 * size, '212,221,252', 0.12);
+    this.ring(x, y, 8 * size, '205,214,244', 0.3);
     for (let i = 0; i < 10 * size; i++) {
       const a = R() * 6.28, sp = (20 + R() * 55) * size;
       this.add({ kind: 'fireball', x: x + Math.cos(a) * 3, y: y + Math.sin(a) * 3, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.8 - 14, life: 0.9 + R() * 0.6, size: (6 + R() * 6) * size, grow: 14 * size, a: 1, air: true });
@@ -146,13 +146,13 @@ export class FX {
     }
     for (let i = 0; i < 14 * size; i++) {
       const a = (i / (14 * size)) * 6.28, sp = (70 + R() * 30) * size;
-      this.add({ kind: 'puff', x: x + Math.cos(a) * 6, y: y + Math.sin(a) * 5, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.75, life: 0.9 + R() * 0.5, size: 5 * size, grow: 16, col: '196,150,98', a: 0.45 });
+      this.add({ kind: 'puff', x: x + Math.cos(a) * 6, y: y + Math.sin(a) * 5, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.75, life: 0.9 + R() * 0.5, size: 5 * size, grow: 16, col: '118,116,124', a: 0.45 });
     }
     for (let i = 0; i < 7 * size; i++) this.add({ kind: 'puff', x: x + (R() - 0.5) * 14 * size, y: y + (R() - 0.5) * 10 * size, vx: (R() - 0.5) * 18 + 5, vy: -10 - R() * 16, life: 1.8 + R() * 1.6, size: (8 + R() * 6) * size, grow: 12, col: `${52 + R() * 30 | 0},${46 + R() * 24 | 0},${40 + R() * 20 | 0}`, a: 0.7, air: true, delay: 0.15 });
-    this.spark(x, y, Math.round(14 * size), '255,210,130', 190 * size);
+    this.spark(x, y, Math.round(14 * size), '186,194,221', 190 * size);
     for (let i = 0; i < 6 * size; i++) {
       const a = R() * 6.28, sp = 50 + R() * 110;
-      this.add({ kind: 'chunk', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, vz: 90 + R() * 160, life: 1 + R() * 0.7, size: 1.8 + R() * 2.6, col: R() < 0.5 ? '70,58,46' : '48,40,34', a: 1, trail: R() < 0.6 });
+      this.add({ kind: 'chunk', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, vz: 90 + R() * 160, life: 1 + R() * 0.7, size: 1.8 + R() * 2.6, col: R() < 0.5 ? '52,54,65' : '36,38,46', a: 1, trail: R() < 0.6 });
     }
     for (let i = 0; i < 10 * size; i++) this.add({ kind: 'glow', x: x + (R() - 0.5) * 20 * size, y: y + (R() - 0.5) * 16 * size, vx: (R() - 0.5) * 20, vy: -14 - R() * 24, life: 1 + R() * 1.2, size: 1.6, grow: 0, col: '255,170,80', a: 0.9 });
     this.decal(x, y, 12 * size + 6);
@@ -187,7 +187,7 @@ export class FX {
       if (o.kind === 'chunk') {
         o.vz -= 380 * dt; o.z += o.vz * dt;
         if (o.z < 0) { o.z = 0; o.vz *= -0.3; o.vx *= 0.5; o.vy *= 0.5; o.vr *= 0.5; }
-        if (o.trail && o.z > 3 && R() < 0.6) this.p.push({ kind: 'puff', x: o.x, y: o.y - o.z * 0.5, vx: 0, vy: -4, vz: 0, z: 0, t: 0, life: 0.6, size: 1.5, grow: 8, col: '70,62,55', a: 0.45, air: true, rot: R() * 6, vr: 0, v: R() * 6 | 0 });
+        if (o.trail && o.z > 3 && R() < 0.6) this.p.push({ kind: 'puff', x: o.x, y: o.y - o.z * 0.5, vx: 0, vy: -4, vz: 0, z: 0, t: 0, life: 0.6, size: 1.5, grow: 8, col: '55,57,68', a: 0.45, air: true, rot: R() * 6, vr: 0, v: R() * 6 | 0 });
       }
       o.x += o.vx * dt; o.y += o.vy * dt;
       if (o.kind === 'debris') {
@@ -220,8 +220,8 @@ export class FX {
       const a = Math.min(1, (25 - c.t) / 5) * 0.85;
       ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.a); ctx.globalAlpha = a;
       ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(1, 1.5, 8, 4, 0, 0, 6.28); ctx.fill();
-      ctx.fillStyle = '#5e5242'; ctx.beginPath(); ctx.ellipse(0, 0, 6, 2.6, 0, 0, 6.28); ctx.fill();
-      ctx.fillStyle = '#7a6a55'; ctx.beginPath(); ctx.arc(6.5, 0, 2.2, 0, 6.28); ctx.fill();
+      ctx.fillStyle = '#494c59'; ctx.beginPath(); ctx.ellipse(0, 0, 6, 2.6, 0, 0, 6.28); ctx.fill();
+      ctx.fillStyle = '#5e6272'; ctx.beginPath(); ctx.arc(6.5, 0, 2.2, 0, 6.28); ctx.fill();
       ctx.fillStyle = c.color; ctx.fillRect(-2, -2.6, 2.5, 2);
       ctx.strokeStyle = '#22252a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-3, 4); ctx.lineTo(5, 6); ctx.stroke();
       ctx.restore();
@@ -283,7 +283,7 @@ export class FX {
         ctx.fillStyle = `rgba(0,0,0,${0.3 * k})`; ctx.fillRect(o.x - o.size / 2 + 2, o.y - o.size / 2 + 2, o.size, o.size * 0.7);
         ctx.save(); ctx.translate(o.x, o.y - o.z * 0.5); ctx.rotate(o.rot); ctx.globalAlpha = Math.min(1, k * 2);
         ctx.fillStyle = `rgb(${o.col})`; ctx.beginPath(); ctx.moveTo(-o.size, -o.size * 0.4); ctx.lineTo(o.size * 0.3, -o.size * 0.7); ctx.lineTo(o.size, o.size * 0.3); ctx.lineTo(-o.size * 0.4, o.size * 0.6); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = 'rgba(255,220,180,0.25)'; ctx.fillRect(-o.size * 0.6, -o.size * 0.5, o.size * 0.8, o.size * 0.3);
+        ctx.fillStyle = 'rgba(196,204,233,0.25)'; ctx.fillRect(-o.size * 0.6, -o.size * 0.5, o.size * 0.8, o.size * 0.3);
         ctx.restore(); ctx.globalAlpha = 1;
       } else if (o.kind === 'debris' && layer === 'air') {
         ctx.fillStyle = `rgba(0,0,0,${0.25 * k})`;
