@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1a120c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Sandthron</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+  <div id="vignette"></div>
+
+  <header id="topbar">
+    <div class="brand">SANDTHRON</div>
+    <div class="stat"><span class="lbl">Runde</span><b id="round">1</b></div>
+    <div class="stat"><span class="lbl">Credits</span><b id="credits">0</b></div>
+    <div class="stat pw"><span class="lbl">Energie</span><b id="power">0</b></div>
+    <div class="stat dt"><span class="lbl">Tageszeit</span><b id="daytime">Morgen</b></div>
+    <div class="spacer"></div>
+    <button id="helpbtn" title="Hilfe">?</button>
+    <button id="cardsbtn">Hacks (0)</button>
+    <button id="nextunit">Nächste Einheit</button>
+    <button id="endturn" class="primary">Runde beenden</button>
+  </header>
+
+  <canvas id="minimap" width="220" height="140"></canvas>
+  <div id="zoom"><button id="zoomin">+</button><button id="zoomout">−</button></div>
+  <div id="seedinfo"></div>
+  <div id="log"></div>
+  <div id="objectives"></div>
+  <aside id="panel"></aside>
+
+  <div id="forecast">
+    <div class="fc-title">Angriff</div>
+    <div class="fc-row"><span>Schaden</span><b class="fc-dmg">0 %</b></div>
+    <div class="fc-row"><span>Gegenschlag</span><b class="fc-ctr">0 %</b></div>
+    <div class="fc-btns"><button id="fc-no">Abbrechen</button><button id="fc-ok" class="primary">Angreifen</button></div>
+  </div>
+
+  <div id="banner"></div>
+
+  <div id="help">
+    <div class="box">
+      <button class="close">×</button>
+      <h2>So wird gespielt</h2>
+      <h3>Steuerung</h3>
+      <ul>
+        <li><b>Antippen / Linksklick:</b> Einheit wählen, dann blaues Feld antippen zum Ziehen.</li>
+        <li><b>Rot markierte Gegner</b> antippen zeigt die Schadensvorschau, nochmal antippen greift an.</li>
+        <li><b>Ziehen</b> verschiebt die Karte, <b>Zwei Finger / Mausrad</b> zoomt.</li>
+        <li><b>Gebäude antippen:</b> Kommandoblock baut, Kaserne, Fahrzeugwerk und Hangar produzieren.</li>
+        <li>Tastatur: <b>E</b> Runde beenden, <b>N</b> nächste Einheit, <b>Esc</b> abbrechen, <b>WASD</b> Karte.</li>
+      </ul>
+      <h3>Regeln</h3>
+      <ul>
+        <li><b>Chrom</b> ist die Ressource. Sammler sammeln sie auf orangen Feldern. Credits gibt es erst, wenn ein Sammler neben einer Schmelze abgeladen hat. Jede Schmelze bringt einen Sammler und einen Träger-Schweber mit, der volle Sammler heimfliegt und leere wieder aufs Feld bringt.</li>
+        <li><b>Psychos</b> leben im Sand und ziehen nach jedem Zug, also zweimal pro Runde. Sie jagen Erschütterungen: Ernten, Fahren und Kämpfe locken sie an, besonders Sammler. Psycho-Signale spürt ihr im Umkreis von 5 Feldern eurer Bodeneinheiten. Auf Fels und im Megablock seid ihr sicher.</li>
+        <li><b>Schlüsselorte</b> (◆ auf der Minikarte): Alte Zisterne +120 Credits/Runde, Funkmast +40 Credits und 5 Felder Sicht, Schmugglerlager 25 % billigere Drops und alle 3 Runden eine Hackkarte, Felsenheiligtum heilt 15/Runde und gibt 25 % Deckung. Einnehmen: eigene Bodeneinheit steht zu Beginn eures Zuges darauf. Der Ort bleibt eurer, bis der Feind ihn besetzt.</li>
+        <li><b>Sammelbefehl:</b> Leeres Feld antippen → „Alle Einheiten hierher“. Alle Einheiten außer Sammler und Träger marschieren dorthin, auch in den folgenden Runden, bis sie da sind oder ihr sie selbst bewegt.</li>
+        <li><b>Schweber landen und starten:</b> „Landen“ setzt den Schweber auf ein freies Feld (nicht im Megablock). Gelandet repariert er 20 pro Runde und lädt Munition nach, kann aber nicht schießen, ist für Bodenwaffen angreifbar und im Sand eine Beute für Psychos. „Starten“ macht ihn wieder flugbereit, in derselben Runde kann er noch fliegen.</li>
+        <li><b>Entscheidungsschlag</b> (Fixer-Büro, ab Runde 8, 8000 Credits, einmal pro Partie): Jede Fraktion hat ihren eigenen — Kaiserliche Legion (Ossar), Himmelsflotte (Vareth), Eiserne Landung (Kordan), Ruf des Uralten (Chromfresser). Ankunft zu Beginn der nächsten eigenen Runde, der Gegner sieht die Zone.</li>
+        <li><b>Vorwarnung:</b> Ein Psycho greift nie aus dem Nichts an. Hat er eine Einheit gewittert, wird sie rot mit „!“ markiert und eine Linie zeigt zum Psycho. Ihr habt dann einen vollen Zug, um sie auf Fels zu bringen oder auszufliegen.</li>
+        <li><b>Psycho-Stufen:</b> Sandwurm verschlingt 1 Feld, Großer Psycho 3 Felder, der seltene Uralte Psycho 7 Felder auf einmal.</li>
+        <li><b>Netzläufer</b> locken keine Psychos an und setzen alle 3 Runden einen Störsender, um Psychos abzulenken oder auf den Feind zu hetzen.</li>
+        <li><b>Träger-Schweber</b> fliegen im Auto-Modus am Rundenende selbstständig: Sie holen bedrohte oder volle Sammler ab, bringen sie zur Schmelze oder zum nächsten Chromfeld.</li>
+        <li><b>Reaktionsfeuer:</b> Einheiten und Abwehrstellungen, die in ihrer Runde nicht angegriffen haben, feuern einmal auf Gegner, die in ihre Reichweite ziehen (70 % Schaden, kein Gegenschlag).</li>
+        <li><b>Hinterhalt:</b> Ihr könnt ins Unaufgedeckte ziehen. Steht dort ein verborgener Gegner, stoppt die Einheit davor und verliert ihre Aktion.</li>
+        <li><b>Angriff nach Bewegung:</b> Nach dem Ziehen werden erreichbare Ziele rot markiert, ein Rote-Ziel antippen greift an. Ausnahme: Raketenwerfer.</li>
+        <li><b>Der Smog</b> zieht jede Runde weiter. Die gestrichelte Fläche zeigt, wohin er als Nächstes zieht. Im Smog gibt es Schaden, Felder darin sind unpassierbar.</li>
+        <li><b>Chromfunde</b> lassen alle vier Runden neue Felder entstehen, manchmal mit einem neuen Psycho.</li>
+        <li><b>Energie:</b> Ist der Verbrauch höher als die Erzeugung, stehen Produktion und Abwehrstellungen still. Stromzellen bauen.</li>
+        <li><b>Schweber</b> fliegen über alles. Kampf-Schweber laden ihre Raketen am Hangar nach, Träger-Schweber heben Bodeneinheiten an.</li>
+        <li><b>Gegenschlag:</b> Wer angreift, wird zurückbeschossen, wenn der Gegner in Reichweite ist. Raketenwerfer feuern aus der Ferne ohne Gegenschlag.</li>
+        <li><b>Tageszeit:</b> Morgen, Tag, Abend, Nacht wechseln mit den Runden. Nachts sehen Bodeneinheiten ein Feld weniger weit.</li>
+        <li><b>Deckung:</b> Trümmer 10 %, Fels 15 %, Megablock 35 % weniger Schaden.</li>
+        <li><b>Fixer-Büro:</b> AV-Drops auf jedes bekannte Feld, landen in der nächsten Runde. Ein Drop alle 2 Runden.</li>
+        <li><b>Netzknoten:</b> Alle 3 Runden eine Hackkarte, eine Karte pro Runde spielbar. Der Störsender lockt Psychos an — auch auf feindliche Sammler. Netrunnerinn können mit der Stimme lähmen.</li>
+        <li><b>Fraktionen:</b> Jedes Haus hat einen eigenen Bonus (Auswahl im Startmenü).</li>
+        <li><b>Speichern:</b> Das Spiel speichert zu Beginn jeder eurer Runden automatisch. Im Startmenü auf „Fortsetzen“.</li>
+        <li><b>Schilde</b> halten Geschosse ab (nur 40 % Schaden), aber Klingen, Flammen und Explosionen dringen durch. Ein Laser auf einen Schild löst eine Reaktion aus, die auch den Schützen trifft. Schilde machen Psychos rasend.</li>
+        <li><b>Tarnung:</b> Getarnte Einheiten sieht und trifft der Gegner nur, wenn er direkt danebensteht. Scharfschützen sind getarnt, solange sie in ihrer Runde weder ziehen noch schießen.</li>
+        <li><b>Pionier</b> übernimmt angrenzende feindliche Gebäude, <b>Spione</b> infiltrieren sie, <b>Psycho-Prediger</b> rufen Große Psychos.</li>
+        <li><b>Satellitenschlag</b> (Fixer-Büro): trifft 7 Felder zu Beginn der nächsten eigenen Runde. Die Zielmarkierung ist für beide Seiten sichtbar.</li>
+        <li><b>Fraktionseinheiten:</b> Smogadler (Vareth), Brenner (Kordan), Schattenklinge (Ossar), Psycho-Prediger (Chromfresser).</li>
+        <li><b>Sieg:</b> Alle gegnerischen Gebäude zerstören.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="cards"></div>
+
+  <div id="endscreen">
+    <h1>Ende</h1>
+    <div class="stats"></div>
+    <div class="ebtns"><button class="primary" onclick="location.reload()">Neues Spiel</button></div>
+  </div>
+
+  <div id="campaign"></div>
+
+  <div id="menu">
+    <div class="m-box">
+      <div class="m-title">SANDTHRON</div>
+      <div class="m-sub">Rundenstrategie auf einem Stadtnplaneten</div>
+      <p class="m-text">Haus Vareth gegen Haus Kordan. Erntet Chrom, baut eure Basis, beherrscht den Himmel mit Schwebern und hütet euch vor dem, was unter dem Sand lauert.</p>
+      <div class="m-label">Fraktion</div>
+      <div class="m-fac">
+        <button data-fac="vareth" class="on" style="--c:#3fa8ff"><b>Haus Vareth</b><span>Schweber 15 % günstiger, +1 Bewegung · Smogadler</span></button>
+        <button data-fac="kordan" style="--c:#ff4a3a"><b>Haus Kordan</b><span>Fahrzeuge +12 % Schaden, Gebäude +20 % stabiler · Brenner</span></button>
+        <button data-fac="ossar" style="--c:#5fe07a"><b>Ossar-Syndikat</b><span>Infanterie +1 Bewegung, Drops 30 % günstiger · Schattenklinge</span></button>
+        <button data-fac="sandvolk" style="--c:#e3b341"><b>Chromfresser</b><span>Chromfresser-Einheiten 30 % günstiger und +1 Bewegung · Psycho-Prediger</span></button>
+      </div>
+      <div class="m-label">Schwierigkeit</div>
+      <div class="m-diff">
+        <button data-diff="leicht">Leicht</button>
+        <button data-diff="normal" class="on">Normal</button>
+        <button data-diff="schwer">Schwer</button>
+      </div>
+      <div class="m-label">Karte (optional)</div>
+      <input id="seed" placeholder="Zufällig — oder Zahl/Wort eingeben" autocomplete="off">
+      <button id="campaignbtn" class="primary big">Kampagne</button>
+      <button id="start" class="big">Freies Gefecht</button>
+      <button id="continue" class="big" style="display:none">Fortsetzen</button>
+      <div class="loading">Die Stadt entsteht …</div>
+      <div class="m-ver">Stufe 2 · Prototyp</div>
+    </div>
+  </div>
+</div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
