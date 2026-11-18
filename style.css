@@ -228,3 +228,12 @@ button.purple { border-color: rgba(200,140,255,0.6); color: #e2c8ff; background:
 #confirmbox .cb-text { margin: 6px 0 14px; color: #d8cbb6; font-size: 14px; }
 #confirmbox .cb-btns { display: flex; gap: 10px; }
 #confirmbox .cb-btns button { flex: 1; }
+
+/* Neonkrone: Fahndung, RAM, Hacks */
+.stat.heat b { color: #ff5a6a; letter-spacing: .05em; font-size: 13px; }
+.stat.heat b span { color: rgba(255,255,255,0.25); }
+.stat.heat.hot b { animation: siren 0.8s steps(2) infinite; }
+@keyframes siren { 0% { color: #ff3b5c; text-shadow: 0 0 8px #ff3b5c; } 50% { color: #4d8dff; text-shadow: 0 0 8px #4d8dff; } }
+.hint.ram { color: #c58bff; font-family: ui-monospace, Menlo, monospace; letter-spacing: .02em; width: 100%; }
+button.hackbtn { border-color: rgba(190,110,255,0.6); color: #e6d2ff; background: rgba(120,50,200,0.18); box-shadow: 0 0 10px rgba(170,90,255,0.25) inset; }
+button.hackbtn:hover { background: rgba(140,60,230,0.32); }

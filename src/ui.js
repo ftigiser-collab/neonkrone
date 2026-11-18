@@ -1,7 +1,8 @@
 // Steuerung: Eingabe, Auswahl, Menüs, Animationen, Rundenablauf
-import { UNITS, BUILDINGS, WEAPONS, TERRAIN, MOVE_COST, CARDS, DROPS, FACTIONS, ARMOR_MOD, ORBITAL_STRIKE , POIS, ENDGAME, ENDGAME_ROUND } from './data.js';
+import { UNITS, BUILDINGS, WEAPONS, TERRAIN, MOVE_COST, CARDS, DROPS, FACTIONS, ARMOR_MOD, ORBITAL_STRIKE , POIS, ENDGAME, ENDGAME_ROUND, HACKS, HEAT } from './data.js';
 import { center, pixelToHex, distance, R, ring } from './hex.js';
-import { icon, cardArt } from './sprites.js';
+import { icon, cardArt, clearIconCache } from './sprites.js';
+import { symbolsOn, setSymbols } from './symbols.js';
 import { angDiff } from './util.js';
 import { aiTurn, autoHarvest, autoCarry } from './ai.js';
 import { shipKind } from './shipart.js';
@@ -22,6 +23,7 @@ export class Controller {
       move: (u, c, r, reach) => this.doMove(u, c, r, reach, u.owner !== 0),
       attack: (u, t) => this.doAttack(u, t),
       voice: (u, t) => this.doVoice(u, t),
+      hack: (u, id, t) => this.doHack(u, id, t),
       card: (owner, idx, c, r) => this.doCard(owner, idx, c, r),
       pickup: (car, t) => this.animPickup(car, t),
       thump: (u, c, r) => this.doThump(u, c, r),
@@ -301,6 +303,18 @@ export class Controller {
       } else if (ev.type === 'orbital') await this.animOrbital(ev);
       else if (ev.type === 'endgame') await this.animEndgame(ev);
       else if (ev.type === 'strike') await this.animStrike(ev);
+      else if (ev.type === 'police') {
+        const u = g.get(ev.u);
+        if (u && (u.owner === 0 || g.seen(u))) {
+          const q = this.r.posOf(u); this.ensureVisible(q.x, q.y);
+          await this.tween(0.6, (k, dt) => { if (Math.random() < dt * 12) { const c = Math.random() < 0.5 ? '255,40,60' : '60,120,255'; this.fx.flash(q.x, q.y, 30, c, 0.35); } if (Math.random() < dt * 18) this.fx.tracer(q.x + 60, q.y - 70, q.x + (Math.random() - 0.5) * 10, q.y + (Math.random() - 0.5) * 10, '#9ad0ff'); });
+          this.r.float(q.x, q.y - 12, `NCPD −${ev.dmg}`, '#7fb4ff', true); u.hitFlash = 1;
+          if (u.dead) await this.finishKill(u, true);
+        }
+      } else if (ev.type === 'maxtacWarn') {
+        const q = center(ev.c, ev.r);
+        if (ev.owner === 0) { this.ensureVisible(q.x, q.y); this.r.float(q.x, q.y - 30, 'MaxTac im Anflug!', '#ff5a6a', true); this.pulse('#heat'); }
+      }
       else if (ev.type === 'card') { if (ev.owner === 0) { this.pulse('#cardsbtn'); this.refresh(); } }
       else if (ev.type === 'income') {
         if (ev.owner === 0) { const b = g.buildings.find((x) => x.owner === 0 && x.type === 'bauhof'); if (b) { const p = center(b.c, b.r); this.r.float(p.x, p.y - 20, `+${ev.amount} Credits`, '#8ef08a'); } }
@@ -530,6 +544,34 @@ export class Controller {
       this.r.float(tgt.x, tgt.y - 60, `${ENDGAME[ev.faction].name} ist gelandet!`, ev.owner === 0 ? '#ffd28a' : '#ff7050', true);
     }
     if (ev.owner === 0) { g.updateVision(); this.r.fogDirty = true; }
+  }
+
+  // Hack: Datenstrahl vom Netrunner zum Ziel, Glitch am Ziel
+  async doHack(u, id, t) {
+    const g = this.g;
+    const evs = g.hack(u, id, t);
+    const h = HACKS[id], a = this.r.posOf(u), b = this.r.posOf(t);
+    const col = id === 'kurzschluss' ? '255,230,90' : id === 'psychose' ? '255,50,90' : id === 'kapern' || id === 'kamera' ? '60,240,255' : '200,110,255';
+    if (u.owner === 0 || g.seen(u) || g.seen(t)) {
+      this.ensureVisible(b.x, b.y);
+      await this.tween(0.75, (k, dt) => {
+        if (Math.random() < dt * 30) {
+          const f = Math.random() * k, x = a.x + (b.x - a.x) * f, y = a.y + (b.y - a.y) * f;
+          this.fx.add({ kind: 'glow', x: x + (Math.random() - 0.5) * 6, y: y + (Math.random() - 0.5) * 6, life: 0.35, size: 2.4, grow: 0, col, a: 0.95 });
+        }
+        if (Math.random() < dt * 6) this.fx.tracer(a.x, a.y - 4, a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k - 4, '#' + col.split(',').map((v) => (+v).toString(16).padStart(2, '0')).join(''));
+      });
+      this.fx.ring(b.x, b.y, 12, col, 0.8); this.fx.flash(b.x, b.y, 36, col, 0.35);
+      for (let k = 0; k < 8; k++) this.fx.add({ kind: 'glow', x: b.x + (Math.random() - 0.5) * 30, y: b.y + (Math.random() - 0.5) * 20, vx: (Math.random() - 0.5) * 40, life: 0.5, size: 2, grow: 0, col, a: 0.9 });
+      const label = id === 'kurzschluss' ? `−${evs[0].dmg}` : h.name;
+      this.r.float(b.x, b.y - 14, label + (evs[0].ice ? ' · ICE' : ''), `rgb(${col})`, true);
+      if (t.isUnit) t.hitFlash = 1;
+      if (evs[0].killed) { await this.wait(0.1); await this.finishKill(t, true); }
+    }
+    for (const e of evs.slice(1)) if (e.type === 'attack') await this.animAttack(e);
+    if (id === 'kamera' && u.owner === 0) { g.updateVision(); this.r.fogDirty = true; }
+    g.cleanup(); if (u.owner === 0 || t.owner === 0) { g.updateVision(); this.r.fogDirty = true; }
+    this.refresh(); this.checkEnd();
   }
 
   async doVoice(u, t) {
@@ -800,7 +842,7 @@ export class Controller {
       }
       this.mode = 'moved'; this.select(this.sel); return;
     }
-    if (['card', 'orbital', 'voice', 'thump', 'capture', 'repair', 'infiltrate', 'callworm', 'strike', 'endgame'].includes(this.mode)) {
+    if (['card', 'orbital', 'voice', 'hack', 'thump', 'capture', 'repair', 'infiltrate', 'callworm', 'strike', 'endgame'].includes(this.mode)) {
       const hit = this.r.hl.target.some(([tc, tr]) => tc === c && tr === r);
       const m = this.mode; this.clearHL(); this.mode = 'idle';
       if (!hit) { this.deselect(); return; }
@@ -812,6 +854,7 @@ export class Controller {
       else if (m === 'callworm') await this.doWormCall(this.sel, c, r);
       else if (m === 'strike') { if (g.orderStrike(0, c, r)) { const p = center(c, r); this.fx.ring(p.x, p.y, 20, '255,90,70', 0.7); } }
       else if (m === 'endgame') { if (g.orderEndgame(0, c, r)) { const p = center(c, r); this.fx.ring(p.x, p.y, 40, '255,210,120', 0.8); this.fx.flash(p.x, p.y, 60, '255,220,150', 0.3); } }
+      else if (m === 'hack') { const t = g.hackTargets(this.sel, this.hackId).find((t) => t.c === c && t.r === r); if (t) { this.mode = 'idle'; this.clearHL(); await this.doHack(this.sel, this.hackId, t); } }
       else if (m === 'voice') { const t = g.voiceTargets(this.sel).find((t) => t.c === c && t.r === r); if (t) await this.doVoice(this.sel, t); }
       this.busy = false; this.deselect(); this.refresh(); return;
     }
@@ -1062,6 +1105,8 @@ export class Controller {
     $('#endturn').onclick = () => this.requestEndTurn();
     $('#nextunit').onclick = () => this.nextUnit();
     $('#helpbtn').onclick = () => $('#help').classList.toggle('show');
+    const vb = $('#viewbtn');
+    if (vb) { const upd = () => { vb.classList.toggle('on', symbolsOn()); vb.textContent = symbolsOn() ? '◈' : '▣'; }; upd(); vb.onclick = () => { setSymbols(!symbolsOn()); clearIconCache(); upd(); this.showPanel(this.sel, true); this.flash(symbolsOn() ? 'Neon-Symbole' : 'Modelle'); }; }
     $('#cardsbtn').onclick = () => this.showCards();
     $('#help').onclick = (e) => { if (e.target.id === 'help' || e.target.classList.contains('close')) $('#help').classList.remove('show'); };
     $('#zoomin').onclick = () => this.r.zoomAt(this.r.vw / 2, this.r.vh / 2, 1.2);
@@ -1083,6 +1128,7 @@ export class Controller {
     $('#round').textContent = g.round;
     const ph = g.dayPhase(); const tz = $('#daytime'); if (tz) { tz.textContent = { morgen: 'Morgengrauen', tag: 'Smogtag', abend: 'Abend', nacht: 'Nacht' }[ph]; tz.parentElement.classList.toggle('night', ph === 'nacht'); }
     $('#credits').textContent = Math.floor(p.credits).toLocaleString('de-DE');
+    const hz = $('#heat'); if (hz) { const st = g.heatStars(0); hz.innerHTML = '★'.repeat(st) + '<span>' + '☆'.repeat(5 - st) + '</span>'; hz.parentElement.classList.toggle('hot', st >= 3); hz.parentElement.title = `Fahndung ${(p.heat || 0).toFixed(1)} / 5 — ab 2 keine Tarnung, ab 3 NCPD-Drohnen, ab 4,5 MaxTac`; }
     const pw = $('#power');
     pw.textContent = `${p.powerProd - p.powerUse >= 0 ? '+' : ''}${p.powerProd - p.powerUse}`;
     pw.parentElement.classList.toggle('low', p.low);
@@ -1221,6 +1267,14 @@ export class Controller {
         if (e.def.callWorm) btns.push(g.canCallWorm(e) ? '<button data-a="callworm" class="purple">Psycho rufen</button>' : `<button disabled>Psychoruf bereit in ${e.wormCd || 0} ${e.wormCd === 1 ? 'Runde' : 'Runden'}</button>`);
         if (e.def.stealth) btns.push(`<span class="hint">${g.stealthed(e, 1) ? 'Getarnt' : 'Sichtbar'}</span>`);
         if (e.def.thumper) btns.push(g.canThump(e) ? '<button data-a="thump" class="purple">Störsender setzen</button>' : `<button disabled>Störsender bereit in ${e.thumpCd || 0} ${e.thumpCd === 1 ? 'Runde' : 'Runden'}</button>`);
+        if (e.def.hacks) {
+          const ram = e.ram ?? e.def.ram, linked = g.netLinked(e);
+          btns.push(`<span class="hint ram">RAM ${ram}/${e.def.ram} ${'▮'.repeat(ram)}${'▯'.repeat(e.def.ram - ram)} · Reichweite ${g.hackRange(e)}${linked ? ' (eingeklinkt)' : ''}</span>`);
+          for (const id of e.def.hacks) {
+            const h = HACKS[id], n = g.canHack(e) ? g.hackTargets(e, id).length : 0;
+            btns.push(n ? `<button data-a="hack:${id}" class="hackbtn" title="${h.desc}">${h.name} · ${h.ram} RAM</button>` : `<button disabled title="${h.desc}">${h.name} · ${h.ram} RAM</button>`);
+          }
+        }
         if (e.def.voice) btns.push(g.canVoice(e) ? (g.voiceTargets(e).length ? '<button data-a="voice" class="purple">Stimme einsetzen</button>' : '<button disabled>Stimme: kein Ziel in 2 Feldern</button>') : `<button disabled>Stimme bereit in ${e.voiceCd || 0} ${e.voiceCd === 1 ? 'Runde' : 'Runden'}</button>`);
         if (e.stunned > 0 || e.wasStunned) btns.push('<button disabled>Gelähmt</button>');
         if (e.def.carrier) btns.push(`<button data-a="auto" class="${e.auto ? 'on' : ''}">Auto-Transport: ${e.auto ? 'an' : 'aus'}</button>`);
@@ -1241,6 +1295,11 @@ export class Controller {
         ${e.turnsLeft > 0 ? `<span>Im Bau</span><b>noch ${e.turnsLeft} ${e.turnsLeft === 1 ? 'Runde' : 'Runden'}</b>` : ''}
         ${e.producing ? `<span>Produziert</span><b>${UNITS[e.producing].name} (nächste Runde)</b>` : ''}</div>
         <div class="p-desc">${e.def.desc}</div>`;
+      if (own && g.current === 0 && e.type === 'bauhof') {
+        const ph = g.players[0].heat || 0;
+        html += `<div class="p-actions"><span class="hint">Fahndung ${ph.toFixed(1)} / 5</span>${g.canBribe(0) ? `<button data-a="bribe" class="purple">NCPD schmieren (${HEAT.bribeCost}): −${HEAT.bribe} Sterne</button>` : `<button disabled>NCPD schmieren (${HEAT.bribeCost})${g.players[0].bribeRound === g.round ? ' — diese Runde schon' : ph <= 0 ? ' — keine Fahndung' : ''}</button>`}</div>`;
+      }
+      if (e.hackTurns > 0) html += `<div class="p-actions"><span class="hint ram">Gekapert — noch ${e.hackTurns} ${e.hackTurns === 1 ? 'Runde' : 'Runden'}</span></div>`;
       if (own && g.current === 0 && e.turnsLeft <= 0) html += this.buildMenuHtml(e);
     }
     if (e.isUnit) html += `<div class="p-detail">${this.profileHtml('unit', e.type)}</div>`;
@@ -1291,6 +1350,7 @@ export class Controller {
     if (d.stealth) tags.push(d.stealth === 'sand' ? 'Getarnt auf der Straße' : d.stealth === 'still' ? 'Getarnt, solange still' : 'Immer getarnt');
     if (d.shield) tags.push('Schild');
     if (d.medic) tags.push(`Versorgt Nachbarn +${d.medic}/Runde`);
+    if (d.hacks) tags.push(`Netrunner · RAM ${d.ram}`);
     if (d.tough || d.elite) tags.push(`Erleidet ${Math.round((d.tough || d.elite) * 100)} % Schaden`);
     return `<div class="pi-desc">${d.desc}</div><div class="pi-tags">${tags.map((x) => `<span>${x}</span>`).join('')}</div>
       ${w ? `<div class="pi-row good"><b>Stark gegen</b> ${strong.join(', ') || '—'}</div><div class="pi-row bad"><b>Schwach gegen</b> ${weak.join(', ') || '—'}</div>` : '<div class="pi-row"><b>Unbewaffnet</b></div>'}
@@ -1395,6 +1455,12 @@ export class Controller {
       this.clearHL(); this.mode = 'strike'; this.r.hl.target = g.strikeHexes(0); $('#panel').classList.remove('show'); this.flash('Zielfeld für den Satellitenschlag antippen (trifft 7 Felder)'); return;
     }
     if (a === 'thump') { this.mode = 'thump'; this.clearHL(); this.r.hl.sel = e; this.r.hl.target = g.thumpHexes(e); this.flash('Straßenfeld für den Störsender antippen (bis 2 Felder)'); return; }
+    if (a.startsWith('hack:')) {
+      const id = a.slice(5); this.hackId = id; this.mode = 'hack'; this.clearHL(); this.r.hl.sel = e;
+      this.r.hl.target = g.hackTargets(e, id).map((t) => [t.c, t.r]);
+      this.flash(`${HACKS[id].name}: Ziel antippen`); return;
+    }
+    if (a === 'bribe') { if (g.bribe(0)) { this.refresh(); this.showPanel(e, true); } return; }
     if (a === 'voice') { this.mode = 'voice'; this.clearHL(); this.r.hl.sel = e; this.r.hl.target = g.voiceTargets(e).map((t) => [t.c, t.r]); this.flash('Ziel für die Stimme antippen'); return; }
     if (a === 'orbital') {
       const cost = g.dropCost(0, t);

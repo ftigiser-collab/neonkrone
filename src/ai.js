@@ -140,6 +140,7 @@ export async function aiTurn(g, act, owner = 1) {
   if (!saving || pl.low) aiBuild(g, owner);
   if (!saving) aiProduce(g, owner);
   if (!g.aiPassive) await aiCards(g, act, owner);
+  if ((pl.heat || 0) >= 3.5 && pl.credits >= 1100) g.bribe(owner);
 
   const mine = g.ownUnits(owner);
   const myB = g.buildings.filter((b) => !b.dead && b.owner === owner);
@@ -187,9 +188,21 @@ export async function aiTurn(g, act, owner = 1) {
       }
       if (best && bs >= 400) { await act.thump(u, best[0], best[1]); continue; }
     }
-    if (g.canVoice(u)) {
-      const ts = g.voiceTargets(u).sort((a, b) => value(g, b) - value(g, a));
-      if (ts.length && value(g, ts[0]) >= 300) { await act.voice(u, ts[0]); continue; }
+    if (g.canHack(u) && !g.aiPassive) {
+      // Netrunner: bester Hack nach Nutzen
+      let best = null, bs = 0;
+      for (const id of u.def.hacks) for (const t of g.hackTargets(u, id)) {
+        let sc = 0;
+        if (id === 'absturz') sc = value(g, t) >= 300 ? value(g, t) * 0.8 : 0;
+        else if (id === 'kurzschluss') sc = (t.def.cat === 'veh' || t.def.mt === 'air' ? 48 : 32) * 12 + (t.hp <= 48 ? 500 : 0);
+        else if (id === 'optik') sc = value(g, t) * 0.35;
+        else if (id === 'psychose') sc = 520;
+        else if (id === 'kapern') sc = g.units.some((v) => !v.dead && v.owner !== owner && distance(v.c, v.r, t.c, t.r) <= 3) ? 700 : 150;
+        else if (id === 'kamera') sc = 120;
+        sc -= g.hackCost(u, id, t) * 20;
+        if (sc > bs) { bs = sc; best = [id, t]; }
+      }
+      if (best && bs >= 150) { await act.hack(u, best[0], best[1]); continue; }
     }
     const ck = g.round + '-' + owner; if (g._poiCk !== ck) { g._poiCk = ck; g._poiClaims = new Set(); }
     await unitAct(g, u, act, mode, { threats, enemyB, enemyU, stage, home, poiClaims: g._poiClaims });

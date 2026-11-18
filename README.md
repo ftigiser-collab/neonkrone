@@ -27,6 +27,12 @@ Velvet Bay, eine Megastadt im Dauerregen. Konzerne und Gangs kämpfen zwischen M
 - Stadtkarte mit Straßenraster, Fahrbahnmarkierungen, Megablock-Dächern, Fassaden, Neonleuchtschicht, Regen, Pfützenspiegelung
 - Schweber, Cyberpsychos, Störsender, Neon-Gebäudeschilder, neue Menü-Skyline
 
+## Stufe 2: Eigene Mechaniken
+- **Netrunning:** Netrunnerin, Netzläufer und Phantom mit Cyberdeck und RAM. Sechs Hacks: Systemabsturz, Kurzschluss, Optik-Reset, Cyberpsychose, Geschütz kapern, Kamera anzapfen. Reichweite 3, eingeklinkt 6; ICE um feindliche Netzknoten kostet +2 RAM.
+- **Zugangspunkte:** 4 neue Schlüsselorte (NETZ) als Netzanschluss, Sicht und Einkommen.
+- **Fahndung (NCPD):** Sterne durch Gewalt auf der Straße, Gebäudezerstörung und Satellitenschläge. Ab 2 keine Tarnung, ab 3 NCPD-Drohnen, ab 4,5 MaxTac-Zugriff mit Vorwarnung. Bestechung im Kommandoblock.
+- **Neon-Symbole:** Einheiten als leuchtende Hologramm-Symbole in Teamfarbe (Form nach Gattung, Glyphe nach Typ, RAM-, Munitions- und Ladungsanzeige). Umschaltbar auf Modelle (◈).
+
 ## Geplant
 - Eigene Gebäudegrafik im Cyberpunk-Stil, Bike und Mech neu, mehr Gang-Flair
 - **Später:** Sound und Musik

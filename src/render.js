@@ -2,6 +2,7 @@
 import { center, hexPath, R, HW, ring, distance, pixelToHex } from './hex.js';
 import { drawUnit, drawBuilding, drawWormSign, drawWormMaw, drawPod, drawThumper, drawSandWhirl, drawWormRidge, drawWormTop, drawWormBody } from './sprites.js';
 import { WORM_SIZES } from './data.js';
+import { symbolsOn } from './symbols.js';
 import { clamp, rgba, Noise, smoothstep } from './util.js';
 import { tintedBlob } from './fx.js';
 import { drawPoi } from './poiart.js';
@@ -73,11 +74,11 @@ export class Renderer {
         if (q < 0.18) {
           // Kiste mit Leuchtstreifen
           c.fillStyle = '#3c3f4c'; c.fillRect(-w / 2 - 1, -h / 2 - 1, w + 2, h + 2); c.fillStyle = '#5a5e70'; c.fillRect(-w / 2 - 1, -h / 2 - 1, w + 2, 1.2);
-          const col = rnd() < 0.6 ? '60,230,255' : '255,60,160'; c.fillStyle = `rgba(${col},0.45)`; c.fillRect(-w / 2, -0.5, w, 1);
+          const col = '60,230,255'; c.fillStyle = `rgba(${col},0.35)`; c.fillRect(-w / 2, -0.5, w, 1);
           g.save(); g.translate(x, y); g.rotate(a); g.fillStyle = `rgba(${col},1)`; g.fillRect(-w / 2, -0.6, w, 1.2); g.restore();
         } else if (q < 0.32) {
           // Kabelbündel
-          c.strokeStyle = rnd() < 0.5 ? '#7a2a3a' : '#2a4a7a'; c.lineWidth = 0.9; c.beginPath(); c.moveTo(-w, 0); c.quadraticCurveTo(0, -h * 2, w, h); c.stroke();
+          c.strokeStyle = rnd() < 0.5 ? '#3a3a48' : '#2a3a52'; c.lineWidth = 0.9; c.beginPath(); c.moveTo(-w, 0); c.quadraticCurveTo(0, -h * 2, w, h); c.stroke();
         } else if (q < 0.45) {
           // Cyberarm-Fragment
           c.fillStyle = '#9aa0b0'; c.beginPath(); c.ellipse(0, 0, w * 0.7, h * 0.45, 0, 0, 6.28); c.fill();
@@ -100,7 +101,7 @@ export class Renderer {
       for (let k = 0; k < 10; k++) { const a = rnd() * 6.28, d = rnd() * R * 0.9; piece(m + Math.cos(a) * d, m + Math.sin(a) * d * 0.9, 0.5); }
       // leuchtende Chips und Implantate
       for (let k = 0; k < 4; k++) {
-        const hp = heaps[k % heaps.length], a = rnd() * 6.28, d = rnd() * hp[2] * 0.8, x = hp[0] + Math.cos(a) * d, y = hp[1] + Math.sin(a) * d * 0.85, col = rnd() < 0.65 ? '70,235,255' : rnd() < 0.5 ? '255,60,170' : '180,255,90';
+        const hp = heaps[k % heaps.length], a = rnd() * 6.28, d = rnd() * hp[2] * 0.8, x = hp[0] + Math.cos(a) * d, y = hp[1] + Math.sin(a) * d * 0.85, col = rnd() < 0.8 ? '70,235,255' : '150,255,120';
         c.fillStyle = `rgba(${col},0.7)`; c.fillRect(x - 0.8, y - 0.8, 1.6, 1.6);
         const gg = g.createRadialGradient(x, y, 0, x, y, 5); gg.addColorStop(0, `rgba(${col},0.7)`); gg.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gg; g.fillRect(x - 5, y - 5, 10, 10);
       }
@@ -223,10 +224,25 @@ export class Renderer {
       const p = center(po.c, po.r); if (p.x < view.x0 || p.x > view.x1 || p.y < view.y0 || p.y > view.y1) continue;
       drawPoi(ctx, p.x, p.y, po.type, po.owner >= 0 ? g.players[po.owner].color : null, this.t);
     }
+    for (const tp of g.taps) if (tp.owner === 0) {
+      const p = center(tp.c, tp.r);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(60,240,255,${0.35 + 0.2 * Math.sin(this.t * 3)})`; ctx.lineWidth = 1.2; ctx.setLineDash([3, 5]); ctx.lineDashOffset = -this.t * 12;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 4 * HW * 0.98, 0, 6.28); ctx.stroke(); ctx.restore();
+    }
     this.drawWrecks(ctx, dt);
     for (const th of g.thumpers) if (th.owner === 0 || g.visible[g.i(th.c, th.r)]) { const p = center(th.c, th.r); drawThumper(ctx, p.x, p.y, this.t); }
     for (const st of g.strikes) {
       const p = center(st.c, st.r), k = (this.t * 1.2) % 1;
+      if (st.maxtac) {
+        // MaxTac: Blaulicht-Zielzone, abwechselnd rot und blau
+        const ph = Math.floor(this.t * 4) % 2, col = ph ? '70,130,255' : '255,40,60';
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        for (const [c, r] of ring(st.c, st.r, 1, g.W, g.H)) { const q = center(c, r); ctx.fillStyle = `rgba(${col},0.10)`; ctx.beginPath(); hexPath(ctx, q.x, q.y, R - 3); ctx.fill(); }
+        ctx.strokeStyle = `rgba(${col},${0.95 - k * 0.6})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(p.x, p.y, 72 * (1 - k * 0.3), 0, 6.28); ctx.stroke();
+        ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = `rgba(${col},1)`; ctx.fillText('MAXTAC', p.x, p.y - 80);
+        ctx.restore();
+        continue;
+      }
       ctx.strokeStyle = `rgba(255,60,40,${0.9 - k * 0.6})`; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(p.x, p.y, 70 * (1 - k * 0.3), 0, 6.28); ctx.stroke();
       ctx.setLineDash([8, 8]); ctx.lineDashOffset = -this.t * 30; ctx.lineWidth = 1.5;
@@ -309,7 +325,8 @@ export class Renderer {
     const visU = g.units.filter((u) => !u.gone && !u.carried && !u.hidden && (g.seen(u) || u.forceShow));
     const ground = visU.filter((u) => u.def.mt !== 'air').sort((a, b) => this.posOf(a).y - this.posOf(b).y);
     const air = visU.filter((u) => u.def.mt === 'air').sort((a, b) => this.posOf(a).y - this.posOf(b).y);
-    for (const u of ground) this.drawUnitFull(ctx, u);
+    const sym = symbolsOn();
+    if (!sym) for (const u of ground) this.drawUnitFull(ctx, u);
     this.fx.draw(ctx, 'ground', view);
     this.fx.draw(ctx, 'air', view);
     for (const w of g.worms) if (w.surface > 0 || w.body) {
@@ -317,7 +334,7 @@ export class Renderer {
       if (w.body && w.body.length > 1) drawWormBody(ctx, w.body, 34 * sc, this.t, sc);
       if (w.surface > 0) drawWormTop(ctx, p.x, p.y, this.t, w.surface, sc, w.dir || 0, w.open ?? w.surface);
     }
-    for (const u of air) this.drawUnitFull(ctx, u);
+    if (!sym) for (const u of air) this.drawUnitFull(ctx, u);
     for (const pd of this.pods) drawPod(ctx, pd.x, pd.y, pd.h, pd.open, pd.color, this.t);
     for (const sh of this.ships) drawMothership(ctx, sh, this.t);
     this.drawProjectiles(ctx);
@@ -327,6 +344,8 @@ export class Renderer {
 
     this.drawStorm(ctx);
     this.drawFog(ctx);
+    // Neon-Symbole leuchten über Licht, Smog und Nebel
+    if (sym) { for (const u of ground) this.drawUnitFull(ctx, u); for (const u of air) this.drawUnitFull(ctx, u); }
     this.drawWind(ctx, dt);
     this.drawHighlights(ctx);
 
@@ -401,6 +420,7 @@ export class Renderer {
   }
 
   addWreck(e, p) {
+    if (symbolsOn()) return;
     this.wrecks.push({ x: p.x, y: p.y, facing: e.facing, unit: { type: e.type, def: e.def, facing: e.facing, id: e.id, cargo: 0, ammo: 0 }, color: this.g.players[e.owner].color, t: 0, life: 45 });
     if (this.wrecks.length > 25) this.wrecks.shift();
   }

@@ -62,7 +62,7 @@ export function generateMap(seed, W = 30, H = 22) {
   if (!reachable(ter, W, H, starts[0], starts[1])) carve(ter, W, H, starts[0], starts[1]);
 
   // Schlüsselorte: Mitte und zwei umkämpfte Orte gleich weit von beiden Basen, je ein Heiligtum nahe jeder Basis
-  const targets = [[0.5, 0.5, 'zisterne'], [0.24, 0.78, 'warte'], [0.76, 0.22, 'schmuggler'], [0.36, 0.3, 'heiligtum'], [0.64, 0.7, 'heiligtum']];
+  const targets = [[0.5, 0.5, 'zisterne'], [0.24, 0.78, 'warte'], [0.76, 0.22, 'schmuggler'], [0.36, 0.3, 'heiligtum'], [0.64, 0.7, 'heiligtum'], [0.5, 0.18, 'zugang'], [0.5, 0.82, 'zugang'], [0.2, 0.5, 'zugang'], [0.8, 0.5, 'zugang']];
   const pois = [];
   for (const [fx, fy, type] of targets) {
     const tc = Math.round(fx * (W - 1)), tr = Math.round(fy * (H - 1));

@@ -276,9 +276,9 @@ export function renderCity(map) {
     if (kind < 0.16) {
       // Landeplatz
       fc.fillStyle = 'rgba(30,30,38,0.9)'; fc.beginPath(); fc.arc(p.x, p.y, 17, 0, 6.28); fc.fill();
-      fc.strokeStyle = 'rgba(232,190,60,0.7)'; fc.lineWidth = 1.4; fc.beginPath(); fc.arc(p.x, p.y, 15, 0, 6.28); fc.stroke();
+      fc.strokeStyle = 'rgba(232,190,60,0.4)'; fc.lineWidth = 1.2; fc.beginPath(); fc.arc(p.x, p.y, 15, 0, 6.28); fc.stroke();
       fc.strokeStyle = 'rgba(235,235,245,0.75)'; fc.lineWidth = 2; fc.beginPath(); fc.moveTo(p.x - 5, p.y - 6); fc.lineTo(p.x - 5, p.y + 6); fc.moveTo(p.x + 5, p.y - 6); fc.lineTo(p.x + 5, p.y + 6); fc.moveTo(p.x - 5, p.y); fc.lineTo(p.x + 5, p.y); fc.stroke();
-      for (let k = 0; k < 8; k++) { const a = k * 0.785, x = p.x + Math.cos(a) * 15, y = p.y + Math.sin(a) * 15; glow(x, y, 4, '255,190,80', 0.9); }
+      for (let k = 0; k < 8; k += 2) { const a = k * 0.785, x = p.x + Math.cos(a) * 15, y = p.y + Math.sin(a) * 15; glow(x, y, 3, '255,190,80', 0.45); }
     } else {
       const n = 2 + Math.floor(rnd() * 4);
       for (let k = 0; k < n; k++) {

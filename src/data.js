@@ -74,8 +74,8 @@ export const WEAPONS = {
 export const UNITS = {
   inf:     { name: 'Söldner', cat: 'inf', move: 3, mt: 'foot', sight: 2, armor: 'inf', weapon: 'rifle', cost: 100, prereq: ['kaserne'], vib: 1,
              desc: 'Günstige Straßensöldner mit Smartgewehren — klettern sogar durch Megablocks.' },
-  sandgaenger: { name: 'Netzläufer', cat: 'inf', move: 4, mt: 'sandfoot', sight: 3, armor: 'inf', weapon: 'rifle', cost: 400, prereq: ['kaserne', 'ausguck'], vib: 0, thumper: true,
-             desc: 'Leise Späher mit Kontakt ins lokale Netz. Machen keinen Lärm und locken keine Psychos an, Trümmer kosten sie nichts extra. Setzen alle 3 Runden einen Störsender in bis zu 2 Feldern Entfernung.' },
+  sandgaenger: { name: 'Netzläufer', cat: 'inf', move: 4, mt: 'sandfoot', sight: 3, armor: 'inf', weapon: 'rifle', cost: 400, prereq: ['kaserne', 'ausguck'], vib: 0, thumper: true, ram: 4, ramRegen: 1, hacks: ['optik', 'kamera'],
+             desc: 'Leise Späher mit kleinem Deck (RAM 4): Optik-Reset und Kamera anzapfen. Machen keinen Lärm und locken keine Psychos an, Trümmer kosten sie nichts extra. Setzen alle 3 Runden einen Störsender in bis zu 2 Feldern Entfernung.' },
   scharf:  { name: 'Scharfschütze', cat: 'inf', move: 3, mt: 'foot', sight: 4, armor: 'inf', weapon: 'sniper', cost: 450, prereq: ['kaserne', 'ausguck'], vib: 0.5, stealth: 'still',
              desc: 'Reichweite 2–3, tödlich gegen Infanterie. Mit Thermotarnung unsichtbar, solange er nicht zieht — der Feind sieht ihn nur aus nächster Nähe. Wehrlos im Nahkampf.' },
   schild:  { name: 'Bollwerk-Garde', cat: 'inf', move: 3, mt: 'foot', sight: 2, armor: 'inf', weapon: 'crys', cost: 400, prereq: ['kaserne', 'windfalle'], vib: 1, shield: true,
@@ -108,8 +108,8 @@ export const UNITS = {
              desc: 'Wirft Bomben auf das Feld unter sich oder daneben. Stark gegen Gebäude. 2 Abwürfe, lädt am Hangar nach.' },
   jaeger:  { name: 'Abfang-Schweber', cat: 'air', move: 9, mt: 'air', sight: 3, armor: 'air', weapon: 'aam', cost: 850, prereq: ['horst', 'ausguck'],
              desc: 'Luft-Luft-Raketen mit Reichweite 2. Holt feindliche Schweber vom Himmel, kann keine Bodenziele treffen.' },
-  schwester: { name: 'Netrunnerin', cat: 'sis', move: 3, mt: 'foot', sight: 3, armor: 'inf', weapon: 'blade', cost: 500, prereq: ['konvent'], vib: 0.5, voice: true,
-             desc: 'Kann mit einem Quickhack (Systemabsturz) eine feindliche Einheit in 2 Feldern Umkreis für eine Runde lähmen (alle 3 Runden). Im Nahkampf mit Monodraht tödlich gegen Infanterie.' },
+  schwester: { name: 'Netrunnerin', cat: 'sis', move: 3, mt: 'foot', sight: 3, armor: 'inf', weapon: 'blade', cost: 500, prereq: ['konvent'], vib: 0.5, ram: 8, ramRegen: 2, hacks: ['absturz', 'kurzschluss', 'optik', 'psychose', 'kapern', 'kamera'],
+             desc: 'Netrunnerin mit Cyberdeck: hackt mit RAM (8, +2 pro Runde) feindliche Einheiten und Gebäude in 3 Feldern, eingeklinkt am Zugangspunkt, Netzknoten oder Kameraturm in 6. Systemabsturz, Kurzschluss, Optik-Reset, Cyberpsychose, Geschütz kapern, Kamera anzapfen. Im Nahkampf mit Monodraht tödlich gegen Infanterie.' },
   duenen:  { name: 'Chromschläger', cat: 'sv', move: 4, mt: 'sandfoot', sight: 3, armor: 'inf', weapon: 'desert', cost: 450, prereq: ['felsenhort'], vib: 0, stealth: 'sand',
              desc: 'Schläger der Chromfresser: machen keinen Lärm, auf Straßen getarnt, Trümmer kosten nichts extra.' },
   todes:   { name: 'Mantis-Rotte', cat: 'sv', move: 4, mt: 'sandfoot', sight: 3, armor: 'inf', weapon: 'crys', cost: 750, prereq: ['felsenhort', 'ausguck'], vib: 0, stealth: 'sand', elite: 0.75,
@@ -120,8 +120,8 @@ export const UNITS = {
              desc: 'Schwerer Kampf-Schweber des Kashiro-Konzerns: Raketenkanonen mit Reichweite 1–2 gegen Boden und Luft, keine Munitionsgrenze, gepanzert (80 % Schaden).' },
   brenner: { name: 'Inferno', cat: 'veh', move: 4, mt: 'track', sight: 2, armor: 'heavy', weapon: 'flame', cost: 1000, prereq: ['fabrik'], vib: 2, faction: 'kordan',
              desc: 'Flammenpanzer von Valkor Defense: verheerend gegen Infanterie und Gebäude, Flammen durchdringen Schilde. Nur Nahbereich.' },
-  schatten: { name: 'Phantom', cat: 'inf', move: 4, mt: 'foot', sight: 3, armor: 'inf', weapon: 'crys', cost: 600, prereq: ['kaserne'], vib: 0.3, stealth: 'always', elite: 0.85, faction: 'ossar',
-             desc: 'Attentäter von Netzschatten: dauerhaft optisch getarnt, Monoklinge gegen Infanterie, erleidet nur 85 % Schaden.' },
+  schatten: { name: 'Phantom', ram: 4, ramRegen: 1, hacks: ['optik', 'absturz'], cat: 'inf', move: 4, mt: 'foot', sight: 3, armor: 'inf', weapon: 'crys', cost: 600, prereq: ['kaserne'], vib: 0.3, stealth: 'always', elite: 0.85, faction: 'ossar',
+             desc: 'Attentäter von Netzschatten: dauerhaft optisch getarnt, Monoklinge gegen Infanterie, erleidet nur 85 % Schaden. Kleines Deck (RAM 4): Optik-Reset und Systemabsturz.' },
   soeldner: { name: 'Fixer-Söldner', cat: 'drop', move: 3, mt: 'foot', sight: 2, armor: 'inf', weapon: 'gauss', cost: 0, vib: 1,
              desc: 'Elite-Söldner, nur über das Fixer-Büro. Railguns treffen auch Schweber.' },
   legionaer: { name: 'Schwarzer Trupp', cat: 'drop', move: 3, mt: 'foot', sight: 2, armor: 'inf', weapon: 'gauss', cost: 0, vib: 1, tough: 0.55,
@@ -167,6 +167,7 @@ export const POIS = {
   zisterne:   { name: 'Schwarzmarkt', icon: '💰', text: '+120 Credits pro Runde. Wer den Markt hält, verdient an jedem Deal mit.' },
   warte:      { name: 'Funkmast', icon: '📡', text: '+40 Credits pro Runde und große Sicht (5 Felder) rund um den Mast.' },
   schmuggler: { name: 'Schmugglertunnel', icon: '📦', text: 'AV-Drops 25 % günstiger und alle drei Runden eine Hackkarte.' },
+  zugang:     { name: 'Zugangspunkt', icon: '⌁', text: 'Offener Netzanschluss: Netrunner in bis zu 2 Feldern Entfernung sind eingeklinkt und hacken mit Reichweite 6. Dazu 3 Felder Sicht und +30 Credits pro Runde.' },
   heiligtum:  { name: 'Trauma-Team-Posten', icon: '✚', text: 'Eigene Einheiten auf und neben dem Posten werden um 15 pro Runde versorgt. Wer darauf steht, erhält 25 % Deckung.' },
 };
 
@@ -214,8 +215,34 @@ export const CARDS = {
   vorahnung: { name: 'Netz-Scan', target: 'none', weight: 2, desc: 'Deckt für den Rest dieser Runde die ganze Karte über alle Kameras auf.' },
   wetter:    { name: 'Lüftungshack', target: 'stormHex', weight: 2, desc: 'Lenkt den Smog über die Abluftanlagen: Wählt sein nächstes Ziel, bis zu 4 Felder vom vorhergesagten entfernt.' },
   klopfer:   { name: 'Lockruf', target: 'sandHex', weight: 3, desc: 'Ein Störsignal auf der Straße. In der Weltphase kommen alle Psychos im Umkreis von 12 Feldern dorthin und zerlegen, was im Umkreis von 1 Feld steht.' },
-  verrat:    { name: 'Bestechung', target: 'enemyInf', weight: 2, desc: 'Eine sichtbare feindliche Infanterie-Einheit wechselt für ein besseres Angebot die Seite.' },
+  verrat:    { name: 'Überläufer', target: 'enemyInf', weight: 2, desc: 'Eine sichtbare feindliche Infanterie-Einheit wechselt für ein besseres Angebot die Seite.' },
   schild:    { name: 'Panzerungs-Boost', target: 'own', weight: 3, desc: 'Eine eigene Einheit oder ein Gebäude erleidet 2 Runden lang nur halben Schaden.' },
   sabotage:  { name: 'Kurzschluss', target: 'enemyBld', weight: 2, desc: 'Ein bekanntes feindliches Gebäude fällt eine Runde lang aus: keine Produktion, kein Strom, keine Abwehr.' },
   gilde:     { name: 'Fixer-Gefallen', target: 'none', weight: 1, desc: 'Der nächste AV-Drop kostet nichts.' },
+};
+
+// ---------- Netrunning ----------
+export const HACKS = {
+  absturz:     { name: 'Systemabsturz', ram: 4, target: 'unit', desc: 'Eine feindliche Einheit fällt aus und kann in ihrer nächsten Runde nicht handeln.' },
+  kurzschluss: { name: 'Kurzschluss', ram: 3, target: 'unit', dmg: 32, desc: '32 Schaden, ignoriert Panzerung, Schilde und Deckung. Gegen Fahrzeuge und Schweber 50 % mehr.' },
+  optik:       { name: 'Optik-Reset', ram: 2, target: 'unit', desc: 'Das Ziel ist geblendet: Bis zum Ende seiner nächsten Runde richtet es nur 60 % Schaden an und schießt nicht zurück.' },
+  psychose:    { name: 'Cyberpsychose', ram: 6, target: 'inf', desc: 'Feindliche Infanterie dreht durch und greift sofort die nächste Einheit in Reichweite an, egal wessen. Danach ist sie eine Runde gelähmt.' },
+  kapern:      { name: 'Geschütz kapern', ram: 5, target: 'turret', desc: 'Ein feindliches Wachgeschütz oder eine Luftabwehr feuert 2 Runden lang für euch.' },
+  kamera:      { name: 'Kamera anzapfen', ram: 2, target: 'bld', desc: 'Zapft die Kameras eines feindlichen Gebäudes an: 3 Runden lang seht ihr alles im Umkreis von 4 Feldern.' },
+};
+export const HACK_RANGE = 3, HACK_RANGE_LINKED = 6, ICE_COST = 2;
+
+// ---------- Fahndung (NCPD) ----------
+export const HEAT = {
+  kill: 0.5,        // Abschuss auf Straße oder Trümmern
+  building: 0.5,    // Gebäude zerstört
+  strike: 1.5,      // Satellitenschlag angefordert
+  hackKill: 0.25,
+  decay: 0.5,       // Abbau pro eigener Runde
+  scan: 2,          // ab hier: Tarnung wirkungslos
+  drone: 3,         // ab hier: NCPD-Drohnen beschießen Einheiten auf der Straße
+  droneDmg: 15,
+  maxtac: 4.5,      // ab hier: MaxTac-Zugriff angekündigt
+  maxtacDmg: 60, maxtacBld: 0.2,
+  bribeCost: 500, bribe: 2,
 };

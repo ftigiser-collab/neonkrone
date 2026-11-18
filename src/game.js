@@ -1,5 +1,5 @@
 // Spielregeln und Zustand (rundenbasiert)
-import { UNITS, BUILDINGS, WEAPONS, ARMOR_MOD, TERRAIN, MOVE_COST, FACTIONS, START_CREDITS, DROPS, CARDS, WORM_SIZES, ORBITAL_STRIKE, SHIELD_PIERCE, POIS, ENDGAME, ENDGAME_ROUND } from './data.js';
+import { UNITS, BUILDINGS, WEAPONS, ARMOR_MOD, TERRAIN, MOVE_COST, FACTIONS, START_CREDITS, DROPS, CARDS, WORM_SIZES, ORBITAL_STRIKE, SHIELD_PIERCE, POIS, ENDGAME, ENDGAME_ROUND, HACKS, HACK_RANGE, HACK_RANGE_LINKED, ICE_COST, HEAT } from './data.js';
 import { neighbors, distance, ring, center } from './hex.js';
 const LANDED = {};
 const ang = (c1, r1, c2, r2) => { const a = center(c1, r1), b = center(c2, r2); return Math.atan2(b.y - a.y, b.x - a.x); };
@@ -27,7 +27,7 @@ export class Game {
     this.state = 'play';
     this.storm = null;
     this.thumpers = [];
-    this.strikes = [];
+    this.strikes = []; this.taps = [];
     this.wormCalls = [];
     this.pois = (map.pois || []).map((p) => ({ ...p, owner: -1 }));
     for (const p of this.pois) for (const [c, r] of ring(p.c, p.r, 1, this.W, this.H)) this.explored[r * this.W + c] = 1;
@@ -35,7 +35,7 @@ export class Game {
   }
   mkPlayer(id, faction) {
     return { id, faction, name: FACTIONS[faction].name, color: FACTIONS[faction].color, perk: FACTIONS[faction].perk || {}, credits: START_CREDITS, incomeMult: 1, powerProd: 0, powerUse: 0, low: false,
-      cards: [], cardRound: 0, cardTimer: 0, freeDrop: false, dropCd: 0, pendingDrops: [], stats: { kills: 0, lost: 0, harvested: 0, eaten: 0, lostTypes: {} } };
+      cards: [], cardRound: 0, cardTimer: 0, freeDrop: false, dropCd: 0, pendingDrops: [], heat: 0, bribeRound: 0, stats: { kills: 0, lost: 0, harvested: 0, eaten: 0, lostTypes: {} } };
   }
 
   // ---------- Fraktionsboni ----------
@@ -97,6 +97,7 @@ export class Game {
     const def = UNITS[type];
     const u = { id: NEXT++, isUnit: true, owner, type, def, c, r, hp: 100, moved: false, acted: false, ammo: def.ammo || 0, cargo: 0, carrying: 0, carried: false, auto: !!def.harvester || !!def.carrier, facing: owner === 0 ? 0.5 : 3.6, vib: 0, harvested: false };
     this.units.push(u); this.byId.set(u.id, u);
+    if (u.def.ram) u.ram = u.def.ram;
     return u;
   }
   addBuilding(owner, type, c, r, instant = false) {
@@ -111,6 +112,7 @@ export class Game {
   // ---------- Tarnung ----------
   stealthed(u, viewer = 0) {
     if (!u || !u.isUnit || u.owner === viewer || !u.def.stealth) return false;
+    if ((this.players[u.owner].heat || 0) >= HEAT.scan) return false;
     const st = u.def.stealth;
     if (st === 'sand' && !this.isSand(u.c, u.r)) return false;
     if (st === 'still' && (u.moved || u.attacked)) return false;
@@ -284,6 +286,7 @@ export class Game {
     const def = t.isBuilding || this.isAir(t) ? 0 : TERRAIN[this.terr(t.c, t.r)].def + (this.poiAt(t.c, t.r)?.type === 'heiligtum' ? 0.25 : 0);
     let dmg = w.power * mod * hpF * (1 - def);
     if (att.isUnit && att.def.cat === 'veh') dmg *= this.players[att.owner].perk.vehPower || 1;
+    if (att.blind > 0) dmg *= 0.6;
     if (t.shield > 0) dmg *= 0.5;
     if (t.isUnit && t.def.shield && !SHIELD_PIERCE.includes(w.type)) dmg *= 0.4;
     if (t.isUnit && t.def.tough) dmg *= t.def.tough;
@@ -309,6 +312,7 @@ export class Game {
 
   canCounter(t, att, ac = att.c, ar = att.r) {
     const w = this.weapon(t); if (!w || w.noCounter || !this.canHit(w, att)) return false;
+    if (t.blind > 0) return false;
     if (t.isBuilding && (t.turnsLeft > 0 || this.players[t.owner].low || t.sabotaged > 0)) return false;
     if (w.ammo && t.ammo <= 0) return false;
     return this.inRange(w, t.c, t.r, ac, ar);
@@ -367,6 +371,7 @@ export class Game {
     if (e.dead) return;
     e.dead = true; e.hp = 0;
     if (by) this.players[by.owner].stats.kills++;
+    if (by && by.owner !== e.owner && this.players[by.owner]) this.addHeat(by.owner, e.isBuilding ? HEAT.building : this.isSand(e.c, e.r) ? HEAT.kill : 0);
     this.players[e.owner].stats.lost++;
     const lt = this.players[e.owner].stats.lostTypes || (this.players[e.owner].stats.lostTypes = {});
     lt[e.type] = (lt[e.type] || 0) + 1;
@@ -448,6 +453,7 @@ export class Game {
       if (p.owner !== owner) continue;
       if (p.type === 'zisterne') cr += 120;
       if (p.type === 'warte') cr += 40;
+      if (p.type === 'zugang') cr += 30;
       if (p.type === 'schmuggler' && this.round % 3 === 0) { const c = this.drawCard(owner); if (c) ev.push({ type: 'card', owner, card: c }); }
       if (p.type === 'heiligtum') for (const u of this.units) if (!u.dead && u.owner === owner && u.isUnit && distance(u.c, u.r, p.c, p.r) <= 1 && u.hp < 100) { u.hp = Math.min(100, u.hp + 15); ev.push({ type: 'heal', u: u.id, amount: 15 }); }
     }
@@ -457,6 +463,8 @@ export class Game {
     const ev = [];
     this.current = owner;
     this.poiTurn(owner, ev);
+    this.netTurn(owner, ev);
+    this.heatTurn(owner, ev);
     if (this.round > 1) {
       let amt = 0;
       for (const b of this.buildings) if (!b.dead && b.owner === owner && b.turnsLeft <= 0) amt += b.type === 'bauhof' ? 150 : 0;
@@ -504,6 +512,8 @@ export class Game {
       if (u.dead || u.owner !== owner) continue;
       u.moved = false; u.acted = false; u.harvested = false; u.attacked = false; u.reflex = false; u.ambushed = false;
       if (u.voiceCd > 0) u.voiceCd--;
+      if (u.def.ram) u.ram = Math.min(u.def.ram, (u.ram ?? u.def.ram) + u.def.ramRegen);
+      if (u.blind > 0) u.blind--;
       if (u.thumpCd > 0) u.thumpCd--;
       if (u.wormCd > 0) u.wormCd--;
       if (u.shield > 0) u.shield--;
@@ -686,12 +696,24 @@ export class Game {
     const p = this.players[owner];
     p.credits -= ORBITAL_STRIKE.cost; p.strikeCd = ORBITAL_STRIKE.cooldown;
     this.strikes.push({ c, r, owner });
+    this.addHeat(owner, HEAT.strike);
     this.say(owner === 0 ? 'Satellitenschlag angefordert — Einschlag zu Beginn eurer nächsten Runde' : 'Warnung: feindliches Satellitenschlag im Anflug! Zielzone räumen', owner === 0 ? 'good' : 'bad');
     return true;
   }
   resolveStrikes(owner) {
     const ev = [];
-    for (const s of this.strikes.filter((x) => x.owner === owner)) {
+    for (const s of this.strikes.filter((x) => x.owner === owner && x.maxtac && x.round !== this.round)) {
+      const hits = [];
+      for (const [c, r] of ring(s.c, s.r, 1, this.W, this.H)) {
+        for (const u of this.units) if (!u.dead && !u.carried && u.c === c && u.r === r && u.def.mt !== 'air') { const d = HEAT.maxtacDmg * (c === s.c && r === s.r ? 1.25 : 1) * (u.def.tough || 1); u.hp -= d; hits.push({ id: u.id, dmg: Math.round(d) }); if (u.hp <= 0.5) this.kill(u, null); }
+        const b = this.buildingAt(c, r);
+        if (b) { b.hp -= b.maxHp * HEAT.maxtacBld; hits.push({ id: b.id, dmg: Math.round(HEAT.maxtacBld * 100) }); if (b.hp <= 0) this.kill(b, null); }
+      }
+      this.players[owner].heat = 2;
+      this.say(owner === 0 ? 'MaxTac-Zugriff! Die Fahndung sinkt auf 2' : 'MaxTac hat beim Feind zugeschlagen', owner === 0 ? 'bad' : 'good');
+      ev.push({ type: 'strike', owner, c: s.c, r: s.r, hits, maxtac: true });
+    }
+    for (const s of this.strikes.filter((x) => x.owner === owner && !x.maxtac)) {
       const hits = [];
       for (const [c, r] of ring(s.c, s.r, ORBITAL_STRIKE.radius, this.W, this.H)) {
         for (const u of this.units) if (!u.dead && !u.carried && u.c === c && u.r === r) { const d = ORBITAL_STRIKE.unitDmg * (c === s.c && r === s.r ? 1.3 : 1) * (u.def.tough || 1); u.hp -= d; hits.push({ id: u.id, dmg: Math.round(d) }); if (u.hp <= 0.5) this.kill(u, { owner }); }
@@ -701,7 +723,100 @@ export class Game {
       }
       ev.push({ type: 'strike', owner, c: s.c, r: s.r, hits });
     }
-    this.strikes = this.strikes.filter((x) => x.owner !== owner);
+    this.strikes = this.strikes.filter((x) => x.owner !== owner || (x.maxtac && x.round === this.round));
+    return ev;
+  }
+
+  // ---------- Fahndung (NCPD) ----------
+  addHeat(owner, v) { const p = this.players[owner]; if (!p || !v) return; p.heat = Math.min(5, (p.heat || 0) + v); }
+  heatStars(owner) { return Math.min(5, Math.floor(this.players[owner].heat || 0)); }
+  heatTurn(owner, ev) {
+    const p = this.players[owner]; p.heat = p.heat || 0;
+    if (this.round <= 1) return;
+    if (p.heat >= HEAT.drone) {
+      const cands = this.units.filter((u) => !u.dead && !u.carried && u.owner === owner && u.def.mt !== 'air' && this.isSand(u.c, u.r));
+      if (cands.length) {
+        const u = cands[Math.floor(this.rnd() * cands.length)], d = HEAT.droneDmg * (u.def.tough || 1);
+        u.hp -= d; ev.push({ type: 'police', u: u.id, dmg: Math.round(d) });
+        this.say(owner === 0 ? `NCPD-Drohne beschießt euren ${u.def.name}` : 'NCPD-Drohnen jagen den Feind', owner === 0 ? 'bad' : 'info');
+        if (u.hp <= 0.5) this.kill(u, null);
+      }
+    }
+    if (p.heat >= HEAT.maxtac && !this.strikes.some((x) => x.maxtac && x.owner === owner)) {
+      const t = this.units.filter((u) => !u.dead && !u.carried && u.owner === owner && u.def.mt !== 'air' && !this.buildingAt(u.c, u.r))
+        .sort((a, b) => (UNITS[b.type].cost || 0) - (UNITS[a.type].cost || 0))[0];
+      if (t) {
+        this.strikes.push({ c: t.c, r: t.r, owner, maxtac: true, round: this.round });
+        ev.push({ type: 'maxtacWarn', owner, c: t.c, r: t.r });
+        this.say(owner === 0 ? 'MaxTac-Zugriff angekündigt! Zielzone räumen oder die Polizei schmieren' : 'MaxTac rückt gegen den Feind aus', owner === 0 ? 'bad' : 'good');
+      }
+    }
+    p.heat = Math.max(0, p.heat - HEAT.decay);
+  }
+  canBribe(owner) { const p = this.players[owner]; return p.credits >= HEAT.bribeCost && (p.heat || 0) > 0 && p.bribeRound !== this.round && this.current === owner; }
+  bribe(owner) {
+    if (!this.canBribe(owner)) return false;
+    const p = this.players[owner];
+    p.credits -= HEAT.bribeCost; p.heat = Math.max(0, p.heat - HEAT.bribe); p.bribeRound = this.round;
+    if (p.heat < HEAT.maxtac) this.strikes = this.strikes.filter((x) => !(x.maxtac && x.owner === owner));
+    this.say(owner === 0 ? 'Die NCPD schaut weg — Fahndung gesenkt' : 'Der Feind hat die Polizei geschmiert', owner === 0 ? 'good' : 'info');
+    return true;
+  }
+
+  // ---------- Netrunning ----------
+  netTurn(owner, ev) {
+    for (const b of this.buildings) if (!b.dead && b.hackTurns > 0 && b.owner === owner) {
+      b.hackTurns--;
+      if (b.hackTurns <= 0) { b.owner = b.hackOwner; delete b.hackOwner; b.reflex = false; this.say(`${b.def.name}: Kaperung beendet`, 'info', owner); this.updatePower(); }
+    }
+    for (const t of this.taps) if (t.owner === owner) t.turns--;
+    this.taps = this.taps.filter((t) => t.turns > 0 && this.buildingAt(t.c, t.r));
+  }
+  netLinked(u) {
+    return this.pois.some((p) => p.type === 'zugang' && p.owner === u.owner && distance(p.c, p.r, u.c, u.r) <= 2)
+      || this.buildings.some((b) => !b.dead && b.owner === u.owner && b.turnsLeft <= 0 && (b.type === 'konvent' || b.type === 'ausguck') && distance(b.c, b.r, u.c, u.r) <= 2);
+  }
+  hackRange(u) { return this.netLinked(u) ? HACK_RANGE_LINKED : HACK_RANGE; }
+  iceAt(owner, c, r) { return this.buildings.some((b) => !b.dead && b.owner !== owner && b.type === 'konvent' && b.turnsLeft <= 0 && distance(b.c, b.r, c, r) <= 3); }
+  hackCost(u, id, t) { return HACKS[id].ram + (t && this.iceAt(u.owner, t.c, t.r) ? ICE_COST : 0); }
+  canHack(u) { return !!u.def.hacks && !u.acted && !u.carried && u.owner === this.current && !(u.stunned > 0) && !u.wasStunned; }
+  hackTargets(u, id) {
+    const h = HACKS[id], range = this.hackRange(u);
+    const see = (t) => u.owner !== 0 || this.visible[this.i(t.c, t.r)];
+    const near = (t) => distance(u.c, u.r, t.c, t.r) <= range;
+    let ts;
+    if (h.target === 'unit') ts = this.units.filter((t) => !t.dead && !t.carried && t.owner !== u.owner && !this.stealthed(t, u.owner));
+    else if (h.target === 'inf') ts = this.units.filter((t) => !t.dead && !t.carried && t.owner !== u.owner && t.def.cat !== 'veh' && t.def.mt !== 'air' && !t.def.harvester && !this.stealthed(t, u.owner) && this.weapon(t));
+    else if (h.target === 'turret') ts = this.buildings.filter((b) => !b.dead && b.owner !== u.owner && b.def.weapon && b.turnsLeft <= 0 && !(b.hackTurns > 0));
+    else ts = this.buildings.filter((b) => !b.dead && b.owner !== u.owner && !this.taps.some((t) => t.owner === u.owner && t.c === b.c && t.r === b.r));
+    return ts.filter((t) => near(t) && see(t) && (u.ram ?? 0) >= this.hackCost(u, id, t));
+  }
+  hack(u, id, t) {
+    const h = HACKS[id], cost = this.hackCost(u, id, t);
+    u.ram -= cost; u.acted = true; u.moved = true;
+    u.facing = Math.atan2(center(t.c, t.r).y - center(u.c, u.r).y, center(t.c, t.r).x - center(u.c, u.r).x);
+    const ev = [{ type: 'hack', u: u.id, t: t.id, hack: id, cost, ice: cost > h.ram }];
+    if (id === 'absturz') t.stunned = 1;
+    else if (id === 'kurzschluss') {
+      const d = h.dmg * (t.def.cat === 'veh' || t.def.mt === 'air' ? 1.5 : 1);
+      t.hp -= d; ev[0].dmg = Math.round(d);
+      if (t.hp <= 0.5) { this.kill(t, u); ev[0].killed = true; }
+    } else if (id === 'optik') { t.blind = 2; t.reflex = false; }
+    else if (id === 'psychose') {
+      const w = this.weapon(t);
+      const victims = this.units.filter((v) => !v.dead && !v.carried && v !== t && this.canHit(w, v) && this.inRange(w, t.c, t.r, v.c, v.r))
+        .sort((a, b) => distance(t.c, t.r, a.c, a.r) - distance(t.c, t.r, b.c, b.r));
+      if (victims.length) {
+        const owner = t.owner, a = this.attack(t, victims[0]); a.psycho = true; ev.push(a);
+        if (victims[0].owner === owner) this.say(`${t.def.name} feuert auf die eigenen Leute!`, owner === 0 ? 'bad' : 'good');
+      }
+      if (!t.dead) t.stunned = 1;
+    } else if (id === 'kapern') {
+      t.hackOwner = t.owner; t.owner = u.owner; t.hackTurns = 2; t.reflex = false; t.producing = null;
+      this.updatePower();
+      this.say(u.owner === 0 ? `${t.def.name} gekapert — feuert 2 Runden für euch` : `Feindliche Netrunner haben euer ${t.def.name} gekapert!`, u.owner === 0 ? 'good' : 'bad');
+    } else if (id === 'kamera') { this.taps.push({ c: t.c, r: t.r, owner: u.owner, turns: 3 }); this.updateVision(); }
+    if (u.owner === 0 || t.owner === 0) this.say(`${u.owner === 0 ? 'Hack' : 'Feindlicher Hack'}: ${h.name}${ev[0].ice ? ' (durch ICE, +2 RAM)' : ''}`, u.owner === 0 ? 'info' : 'warn');
     return ev;
   }
 
@@ -1030,6 +1145,8 @@ export class Game {
       if (b.def.radar && b.turnsLeft <= 0 && !this.players[0].low) reveal(b.c, b.r, 9, this.radar);
     }
     for (const p of this.pois) if (p.owner === 0 && p.type === 'warte') reveal(p.c, p.r, 5);
+    for (const p of this.pois) if (p.owner === 0 && p.type === 'zugang') reveal(p.c, p.r, 3);
+    for (const t of this.taps) if (t.owner === 0) reveal(t.c, t.r, 4);
     for (const w of this.worms) {
       if (this.units.some((u) => !u.dead && u.owner === 0 && !u.carried && u.def.mt !== 'air' && distance(u.c, u.r, w.c, w.r) <= 5)) this.radar[this.i(w.c, w.r)] = 1;
     }
@@ -1063,7 +1180,7 @@ export class Game {
     return JSON.stringify({ v: 2, seed: this.map.seed, ter: this.map.ter, spice: Array.from(this.map.spice), round: this.round, current: this.current,
       players: this.players, units: this.units.filter((u) => !u.dead).map(strip), buildings: this.buildings.filter((b) => !b.dead).map(strip),
       worms: this.worms.map(strip), storm: { c: this.storm.c, r: this.storm.r, rad: this.storm.rad, dir: this.storm.dir, next: this.storm.next },
-      thumpers: this.thumpers, strikes: this.strikes, wormCalls: this.wormCalls, explored: Array.from(this.explored).join(''), revealRound: this.revealRound, aiMode: this.aiMode, diffName: this.diffName, missionId: this.mission?.id || null, aiPassive: !!this.aiPassive, pois: this.pois.map((p) => p.owner) });
+      thumpers: this.thumpers, strikes: this.strikes, taps: this.taps, wormCalls: this.wormCalls, explored: Array.from(this.explored).join(''), revealRound: this.revealRound, aiMode: this.aiMode, diffName: this.diffName, missionId: this.mission?.id || null, aiPassive: !!this.aiPassive, pois: this.pois.map((p) => p.owner) });
   }
   static restore(map, data, diff) {
     map.ter = data.ter; map.spice = Float32Array.from(data.spice);
@@ -1073,7 +1190,7 @@ export class Game {
     g.units = data.units.map((u) => ({ ...u, def: u.landed ? g.landedDef(u.type) : UNITS[u.type] }));
     g.buildings = data.buildings.map((b) => ({ ...b, def: BUILDINGS[b.type], rise: 1 }));
     if (data.pois) g.pois.forEach((p, k) => { p.owner = data.pois[k] ?? -1; });
-    g.worms = data.worms; g.storm = data.storm; g.thumpers = data.thumpers || []; g.strikes = data.strikes || []; g.wormCalls = data.wormCalls || [];
+    g.worms = data.worms; g.storm = data.storm; g.thumpers = data.thumpers || []; g.strikes = data.strikes || []; g.taps = data.taps || []; g.wormCalls = data.wormCalls || [];
     for (const e of [...g.units, ...g.buildings, ...g.worms]) { g.byId.set(e.id, e); NEXT = Math.max(NEXT, e.id + 1); }
     for (let k = 0; k < data.explored.length; k++) g.explored[k] = data.explored.charCodeAt(k) === 49 ? 1 : 0;
     g.rnd = mulberry32(map.seed * 7 + data.round * 131);

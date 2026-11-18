@@ -1,3 +1,4 @@
+import { drawSymbol, symbolsOn } from './symbols.js';
 // Prozedurale Grafik: Einheiten, Gebäude, Würmer (Draufsicht, Licht von oben links)
 import { shade, rgba } from './util.js';
 import { VDRAW } from './vart.js';
@@ -21,6 +22,7 @@ function shadowOf(ctx, fn, dx = 4, dy = 5, a = 0.35) {
 export function drawUnit(ctx, u, x, y, color, t, o = {}) {
   ctx.save();
   ctx.translate(x, y);
+  if (symbolsOn() && !o.model) { drawSymbol(ctx, u, color, t, o); ctx.restore(); return; }
   if (o.ring) {
     ctx.fillStyle = rgba(color, 0.22); ctx.strokeStyle = rgba(color, 0.75); ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.ellipse(0, 4, 27, 16, 0, 0, 6.28); ctx.fill(); ctx.stroke();
@@ -522,6 +524,13 @@ function dome(ctx, x, y, r, col, glow) {
 const SIGN = { bauhof: 'HQ', windfalle: 'PWR', raffinerie: 'CHROM', kaserne: 'MERC', fabrik: 'GARAGE', ausguck: 'CAM', horst: 'AV', kontor: 'FIXER', konvent: 'NET', felsenhort: 'RUST' };
 // Leuchtreklame in Teamfarbe, flackert gelegentlich
 function neonSign(ctx, b, color, t) {
+  if (b.hackTurns > 0) {
+    // gekapert: violettes Störfeld
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 4; k++) { const y = -18 + ((t * 30 + k * 11) % 36); ctx.fillStyle = `rgba(190,110,255,${0.35 + 0.3 * Math.sin(t * 13 + k)})`; ctx.fillRect(-20 + Math.sin(t * 17 + k) * 4, y, 40, 1.4); }
+    ctx.strokeStyle = `rgba(190,110,255,${0.6 + 0.3 * Math.sin(t * 6)})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]); ctx.lineDashOffset = t * 15; ctx.beginPath(); ctx.arc(0, 0, 26, 0, 6.28); ctx.stroke();
+    ctx.restore();
+  }
   const txt = SIGN[b.type]; if (!txt) return;
   const flick = Math.sin(t * 23 + b.id * 7) > 0.97 ? 0.35 : 1;
   ctx.save(); ctx.translate(-24, -27);
@@ -960,6 +969,7 @@ function _old_drawWormTop(ctx, x, y, t, k, scale = 1, dir = 0, open = 1) {
 
 // ---------- Kachel-Icons für das Menü ----------
 const iconCache = new Map();
+export function clearIconCache() { iconCache.clear(); }
 const iconBg = {};
 function iconBackdrop(sky) {
   if (iconBg[sky]) return iconBg[sky];
@@ -993,6 +1003,7 @@ export function icon(kind, type, color) {
   ctx.save();
   if (kind === 'unit') {
     const cat = def.cat;
+    if (symbolsOn()) { ctx.translate(W / 2, H * 0.52); ctx.scale(3.4, 3.4); drawUnit(ctx, { type, def: { ...def }, facing: 0, id: 3, cargo: 0, ammo: 3, hp: 100 }, 0, 0, color, 0.3, { icon: true }); ctx.restore(); iconCache.set(key, cv); return cv; }
     const sc = cat === 'inf' ? 3.6 : air ? 2.25 : type === 'koloss' ? 1.85 : (type === 'panzer' || type === 'laserpanzer' || type === 'ernter' || type === 'werfer' || type === 'brenner') ? 2.3 : 2.6;
     ctx.translate(W / 2, H * 0.55 + (air ? 6 : 0)); ctx.scale(sc, sc);
     const fake = { type, def: { ...def }, facing: -0.55, id: 3, cargo: 0.6, ammo: 3, hp: 100 };

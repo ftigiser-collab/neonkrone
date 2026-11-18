@@ -61,6 +61,19 @@ const STAT = {
       hazard(c, -12, 18, 14, 3);
     }, { bevel: 0.6, grime: 0.6 });
   },
+  zugang(L) {
+    L((c) => {
+      // Betonsockel mit Kabelschächten
+      c.fillStyle = '#3a3c48'; c.beginPath(); for (let k = 0; k < 6; k++) { const a = k / 6 * 6.28 + 0.52; c.lineTo(Math.cos(a) * 25, Math.sin(a) * 25); } c.closePath(); c.fill();
+      c.strokeStyle = '#1c1d24'; c.lineWidth = 2.4; for (let k = 0; k < 4; k++) { const a = k * 1.57 + 0.4; c.beginPath(); c.moveTo(Math.cos(a) * 9, Math.sin(a) * 9); c.lineTo(Math.cos(a) * 24, Math.sin(a) * 24); c.stroke(); }
+    }, { bevel: 0.4, grime: 0.6 });
+    L((c) => {
+      // Terminalsäule
+      c.fillStyle = lg(c, -9, -9, 9, 9, '#7a8098', '#2a2c36'); rr(c, -9, -9, 18, 18, 3); c.fill();
+      c.fillStyle = '#0c0d12'; rr(c, -6, -6, 12, 12, 2); c.fill();
+      for (const sx of [-1, 1]) { c.fillStyle = '#4a4e5c'; c.fillRect(sx * 12 - 2, -4, 4, 8); }
+    }, { bevel: 0.7, grime: 0.4 });
+  },
   heiligtum(L) {
     L((c) => {
       c.fillStyle = '#5e6272'; c.beginPath(); c.arc(0, 0, 26, 0, 6.28); c.fill();
@@ -111,6 +124,16 @@ export function drawPoi(ctx, x, y, type, ownerColor, t) {
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(4, 0, 22, 0, 6.28); ctx.fill();
     for (let k = 0; k < 4; k++) { const a = k * 1.571 + 0.785; ctx.fillStyle = `rgba(255,200,110,${0.4 + 0.6 * ((t * 2 + k * 0.25) % 1 < 0.3 ? 1 : 0)})`; ctx.beginPath(); ctx.arc(4 + Math.cos(a) * 19, Math.sin(a) * 19, 1.5, 0, 6.28); ctx.fill(); }
     ctx.globalCompositeOperation = 'source-over';
+  } else if (type === 'zugang') {
+    // Holo-Bildschirm mit Datenstrom
+    ctx.globalCompositeOperation = 'lighter';
+    const pu = 0.5 + 0.5 * Math.sin(t * 3);
+    const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, 26); gl.addColorStop(0, `rgba(60,240,255,${0.18 + 0.12 * pu})`); gl.addColorStop(1, 'rgba(60,240,255,0)');
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(0, 0, 26, 0, 6.28); ctx.fill();
+    ctx.fillStyle = 'rgba(60,240,255,0.85)';
+    for (let k = 0; k < 4; k++) { const w = 3 + ((t * 7 + k * 3) % 6); ctx.fillRect(-5, -4.5 + k * 2.6, w, 1.2); }
+    for (let k = 0; k < 4; k++) { const a = k * 1.57 + 0.4, f = (t * 0.8 + k * 0.25) % 1; ctx.fillStyle = `rgba(190,110,255,${1 - f})`; ctx.beginPath(); ctx.arc(Math.cos(a) * (9 + f * 15), Math.sin(a) * (9 + f * 15), 1.5, 0, 6.28); ctx.fill(); }
+    ctx.globalCompositeOperation = 'source-over';
   } else if (type === 'heiligtum') {
     const g = 0.5 + 0.5 * Math.sin(t * 1.6);
     ctx.globalCompositeOperation = 'lighter';
@@ -121,7 +144,7 @@ export function drawPoi(ctx, x, y, type, ownerColor, t) {
     ctx.globalCompositeOperation = 'source-over';
   }
   // Neonschild mit Ortsnamen
-  { const txt = { zisterne: 'MARKT', warte: 'FUNK', schmuggler: 'TUNNEL', heiligtum: '+ TRAUMA' }[type], col = type === 'heiligtum' ? '255,60,80' : type === 'zisterne' ? '255,60,160' : '80,230,255';
+  { const txt = { zisterne: 'MARKT', warte: 'FUNK', schmuggler: 'TUNNEL', heiligtum: '+ TRAUMA', zugang: 'NETZ' }[type], col = type === 'heiligtum' ? '255,60,80' : type === 'zisterne' ? '255,60,160' : type === 'zugang' ? '190,110,255' : '80,230,255';
     ctx.save(); ctx.translate(0, 23); ctx.font = 'bold 6.5px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     const w = ctx.measureText(txt).width + 6; ctx.fillStyle = 'rgba(8,8,14,0.85)'; ctx.fillRect(-w / 2, -4.5, w, 9);
     ctx.globalCompositeOperation = 'lighter'; const fl = Math.sin(t * 19 + x) > 0.97 ? 0.4 : 1;
